@@ -4,34 +4,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Evaluación Médica de Pacientes</title>
+    <title>Pruebas de Evaluación Médica</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet">
 </head>
 
 <body>
     <div class="container mt-5">
-        <h1 class="mb-4">Pruebas de Evaluación Médica</h1>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Pruebas de Evaluación Médica</h2>
+            <button type="button" class="btn" id="backButton">
+                <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 48 48">
+                    <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                        stroke-width="4">
+                        <path d="m13 8l-7 6l7 7" />
+                        <path
+                            d="M6 14h22.994c6.883 0 12.728 5.62 12.996 12.5c.284 7.27-5.723 13.5-12.996 13.5H11.998" />
+                    </g>
+                </svg></button>
+        </div>
         <div class="card">
             <div class="card-body">
                 <form id="evaluationForm">
                     <div class="mb-3">
-                        <label for="patientId" class="form-label">ID del Evaluado:</label>
-                        <input type="text" class="form-control" id="patientId" required>
+                        <label for="patientId" class="form-label"><strong>Cédula del Evaluado:</strong></label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="patientId" required
+                                placeholder="Ingrese la cédula del evaluado">
+                            <button type="button" class="btn btn-outline-secondary" id="searchPatient">Buscar</button>
+                        </div>
+                    </div>
+
+                    <div class="mt-3 mb-3" id="evaluatedInfoDiv"
+                        style="display: none; background-color: #e9ecef; padding: 15px; border-radius: 5px;">
+                        <p class="mb-3"><strong>Información del Evaluado:</strong></p>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p>Cédula: <span id="evaluatedId"></span></p>
+                                <p>Nombre: <span id="evaluatedName"></span></p>
+                                <p>Apellido: <span id="evaluatedLastName"></span></p>
+                                <p>Fecha de Nacimiento: <span id="evaluatedBirthDate"></span></p>
+                            </div>
+                            <div class="col-md-6">
+                                <p>Email: <span id="evaluatedEmail"></span></p>
+                                <p>Tipo de Evaluado: <span id="evaluatedType"></span></p>
+                                <p>Sexo: <span id="evaluatedSex"></span></p>
+                            </div>
+                        </div>
                     </div>
                     <div class="mb-3">
-                        <label for="testType" class="form-label">Tipo de Prueba:</label>
+                        <label for="testType" class="form-label"><strong>Tipo de Prueba:</strong></label>
                         <select class="form-select mb-3" id="testType" required>
                             <option value="">Seleccione el tipo de prueba</option>
                             <option value="foot-tapping">Zapateo</option>
                             <option value="heel-tapping">Taconeo</option>
                         </select>
                         <div class="mb-3" id="testDescriptionDiv" style="display: none;">
-                            <label for="testDescription" class="form-label">Descripción de la prueba:</label>
+                            <label for="testDescription" class="form-label"><strong>Descripción de la
+                                    prueba:</strong></label>
                             <textarea class="form-control" id="testDescription" rows="3" readonly></textarea>
                         </div>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">Estado del Paciente:</label>
+                    <div class="mb-3" id="patientStateDiv" style="display: none;">
+                        <label class="form-label"><strong>Estado del Paciente:</strong></label>
                         <div class="form-check">
                             <input class="form-check-input" type="radio" name="patientState" id="stateOn" value="ON"
                                 required>
@@ -43,11 +77,11 @@
                         </div>
                     </div>
                     <div class="mb-3" id="levodopaTimeDiv" style="display: none;">
-                        <label for="levodopaTime" class="form-label">Última toma de Levodopa:</label>
+                        <label for="levodopaTime" class="form-label"><strong>Última toma de Levodopa:</strong></label>
                         <input type="datetime-local" class="form-control" id="levodopaTime">
                     </div>
-                    <div class="mb-3">
-                        <label for="aptitude" class="form-label">Aptitud para la prueba:</label>
+                    <div class="mb-3" id="aptitudeDiv" style="display: none;">
+                        <label for="aptitude" class="form-label"><strong>Aptitud para la prueba:</strong></label>
                         <select class="form-select" id="aptitude" required>
                             <option value="">Seleccione la aptitud</option>
                             <option value="apto">Apto</option>
@@ -55,28 +89,27 @@
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label for="notes" class="form-label">Notas (opcional):</label>
+                        <label for="notes" class="form-label"><strong>Notas (opcional):</strong></label>
                         <textarea class="form-control" id="notes" rows="3"></textarea>
                     </div>
-                    <button type="submit" class="btn btn-primary" id="iniciarPrueba">Iniciar prueba</button>
+                    <button type="submit" class="btn btn-primary" id="iniciarPrueba" disabled>Iniciar prueba</button>
                     <button type="button" class="btn btn-secondary" id="restartTest" disabled>Reiniciar prueba</button>
                 </form>
             </div>
         </div>
         <div class="mt-4">
-            <h2>Resultado:</h2>
+            <h2>Resultado</h2>
             <div class="card">
                 <div class="card-body" id="resultSpace">
                     Espacio para mostrar la gráfica resultante
                 </div>
             </div>
-            <div class="mt-3">
-                <button type="button" class="btn btn-danger" id="discardButton">Desechar</button>
-                <button type="button" class="btn btn-success" id="saveButton">Guardar</button>
+            <div class="mt-3 mb-5 text-end">
+                <button type="button" class="btn btn-secondary" id="discardButton">Desechar</button>
+                <button type="button" class="btn btn-primary" id="saveButton">Guardar</button>
             </div>
         </div>
     </div>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
     <script src="../js/init-test.js"></script>
 </body>
