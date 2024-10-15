@@ -1,3 +1,20 @@
+const okbtn = document.getElementById('okbtn');
+client = new Paho.MQTT.Client('broker.hivemq.com', Number(8000), "ESP32ClienteIcesiA00394479");
+
+//Listener de mensajes
+client.onMessageArrived = function (msg) {
+    console.log("Arrived!: " + msg.payloadString);
+}
+
+//Función para conectarse al broker
+client.connect({
+    onSuccess: function () {
+        console.log("Conectado al servidor MQTT!")
+        client.subscribe("test/icesi/dlp");
+    }
+});
+
+
 document.addEventListener('DOMContentLoaded', function () {
     const form = document.getElementById('evaluationForm');
     const stateOffRadio = document.getElementById('stateOff');
@@ -11,7 +28,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const searchPatientBtn = document.getElementById('searchPatient');
     const patientStateDiv = document.getElementById('patientStateDiv');
     const aptitudeDiv = document.getElementById('aptitudeDiv');
-    const iniciarPruebaBtn = document.getElementById('iniciarPrueba');
+    const startTestButton = document.getElementById('iniciarPrueba');
 
     stateOffRadio.addEventListener('change', function () {
         levodopaTimeDiv.style.display = this.checked ? 'block' : 'none';
@@ -50,13 +67,13 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
 
                     // Habilitar el botón Iniciar prueba si el paciente existe
-                    iniciarPruebaBtn.disabled = false;
+                    startTestButton.disabled = false;
                 })
                 .catch(error => {
                     alert(error.message); // Mostrar alerta si no se encuentra el paciente
                     patientStateDiv.style.display = 'none';
                     aptitudeDiv.style.display = 'none';
-                    iniciarPruebaBtn.disabled = true; // Deshabilitar el botón
+                    startTestButton.disabled = true; // Deshabilitar el botón
                     // Ocultar el contenedor de información del evaluado si no se encuentra
                     document.getElementById('evaluatedInfoDiv').style.display = 'none';
                 });
@@ -77,9 +94,8 @@ document.addEventListener('DOMContentLoaded', function () {
         levodopaTimeDiv.style.display = 'none';
         patientStateDiv.style.display = 'none';
         aptitudeDiv.style.display = 'none';
-        iniciarPruebaBtn.disabled = true; // Deshabilitar el botón al reiniciar la prueba
+        startTestButton.disabled = true; // Deshabilitar el botón al reiniciar la prueba
     });
-
 
     // Manejar el cambio en el selector de tipo de prueba
     testTypeSelect.addEventListener('change', function () {
@@ -101,6 +117,28 @@ document.addEventListener('DOMContentLoaded', function () {
             // Si no se selecciona ninguna prueba, ocultar la descripción
             testDescriptionDiv.style.display = 'none';
             testDescriptionText.value = '';
+        }
+    });
+
+    startTestButton.addEventListener('click', function () {
+        // Comprobar que todos los campos requeridos están llenos
+        const evaluatedId = document.getElementById('evaluatedId').textContent;
+        const testTypeId = testTypeSelect.value; // Este debe ser el ID del tipo de prueba
+        const patientState = document.querySelector('input[name="patientState"]:checked'); // Estado del paciente
+        const levodopaTimeValue = levodopaTimeInput.value; // Última toma de Levodopa
+        const aptitudeValue = document.getElementById('aptitude').value; // Aptitud para la prueba
+
+        // Verificar que todos los campos necesarios no estén vacíos
+        if (evaluatedId && testTypeId && patientState && aptitudeValue) {
+            // Publicar el mensaje en el formato requerido
+            const message = `init~~${evaluatedId}~~${testTypeId}`;
+            const mqttMessage = new Paho.MQTT.Message(message);
+            mqttMessage.destinationName = "test/icesi/dlp";
+            client.send(mqttMessage);
+
+            console.log(`Mensaje enviado: ${message}`);
+        } else {
+            alert('Por favor, complete todos los campos requeridos antes de iniciar la prueba.');
         }
     });
 
