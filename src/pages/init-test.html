@@ -20,11 +20,15 @@
                     </div>
                     <div class="mb-3">
                         <label for="testType" class="form-label">Tipo de Prueba:</label>
-                        <select class="form-select" id="testType" required>
+                        <select class="form-select mb-3" id="testType" required>
                             <option value="">Seleccione el tipo de prueba</option>
                             <option value="foot-tapping">Zapateo</option>
                             <option value="heel-tapping">Taconeo</option>
                         </select>
+                        <div class="mb-3" id="testDescriptionDiv" style="display: none;">
+                            <label for="testDescription" class="form-label">Descripción de la prueba:</label>
+                            <textarea class="form-control" id="testDescription" rows="3" readonly></textarea>
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Estado del Paciente:</label>
