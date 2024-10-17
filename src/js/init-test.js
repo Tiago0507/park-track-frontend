@@ -30,6 +30,10 @@ document.addEventListener('DOMContentLoaded', function () {
     const aptitudeDiv = document.getElementById('aptitudeDiv');
     const startTestButton = document.getElementById('iniciarPrueba');
 
+    let currentSampleId = null;
+    let currentTestTypeId = null;
+    let testTypeMapping = new Map();
+
     stateOffRadio.addEventListener('change', function () {
         levodopaTimeDiv.style.display = this.checked ? 'block' : 'none';
         levodopaTimeInput.required = this.checked;
@@ -85,17 +89,53 @@ document.addEventListener('DOMContentLoaded', function () {
     form.addEventListener('submit', function (e) {
         e.preventDefault();
         console.log('Form submitted');
+        currentSampleId = Date.now();
         restartTest.disabled = false;
     });
 
-    restartTest.addEventListener('click', function () {
-        form.reset();
-        this.disabled = true;
-        levodopaTimeDiv.style.display = 'none';
-        patientStateDiv.style.display = 'none';
-        aptitudeDiv.style.display = 'none';
-        startTestButton.disabled = true; // Deshabilitar el botón al reiniciar la prueba
+    restartTest.addEventListener('click', async function () {
+        if (confirm('¿Está seguro que desea reiniciar la prueba? Los datos recolectados serán eliminados permanentemente.')) {
+            try {
+                if (currentSampleId && currentTestTypeId) {
+                    const evaluatedId = document.getElementById('evaluatedId').textContent;
+                    
+                    const response = await fetch(
+                        `http://localhost:8080/api/samples?evaluatedId=${evaluatedId}&id=${currentSampleId}&testTypeId=${currentTestTypeId}`, 
+                        {
+                            method: 'DELETE'
+                        }
+                    );
+    
+                    if (!response.ok) {
+                        if (response.status === 404) {
+                            console.log('La muestra ya no existe en la base de datos');
+                        } else {
+                            throw new Error('Error al eliminar la muestra');
+                        }
+                    }
+                }
+    
+                form.reset();
+                this.disabled = true;
+                levodopaTimeDiv.style.display = 'none';
+                patientStateDiv.style.display = 'none';
+                aptitudeDiv.style.display = 'none';
+                startTestButton.disabled = true;
+                document.getElementById('evaluatedInfoDiv').style.display = 'none';
+                document.getElementById('testDescriptionDiv').style.display = 'none';
+                document.getElementById('resultSpace').innerHTML = 'Espacio para mostrar la gráfica resultante';
+                
+                currentSampleId = null;
+                currentTestTypeId = null;
+                testTypeMapping.clear();
+    
+            } catch (error) {
+                console.error('Error during reset:', error);
+                alert('Hubo un error al reiniciar la prueba. Por favor, intente nuevamente.');
+            }
+        }
     });
+    
 
     // Manejar el cambio en el selector de tipo de prueba
     testTypeSelect.addEventListener('change', function () {
@@ -109,14 +149,21 @@ document.addEventListener('DOMContentLoaded', function () {
                     // Mostrar la descripción de la prueba
                     testDescriptionText.value = data.description;
                     testDescriptionDiv.style.display = 'block';
+
+                    testTypeMapping.set(selectedTest, data.id);
+                    currentTestTypeId = data.id;
                 })
                 .catch(error => {
+                    console.error('Error:', error);
+                    testDescriptionDiv.style.display = 'none';
+                    testDescriptionText.value = '';
                     console.error('Error al obtener la descripción de la prueba:', error);
                 });
         } else {
             // Si no se selecciona ninguna prueba, ocultar la descripción
             testDescriptionDiv.style.display = 'none';
             testDescriptionText.value = '';
+            currentTestTypeId = null;
         }
     });
 
