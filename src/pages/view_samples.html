@@ -1,43 +1,33 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sensor Data Charts</title>
+    <title>Gráfica de Sensores</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        canvas {
-            max-width: 600px;
-            margin: 20px;
-        }
-        .input-group {
-            margin: 20px;
-        }
-    </style>
 </head>
+
 <body>
-    <h1>Sensor Data Charts</h1>
-    
-    <div class="input-group">
+
+    <h1>Gráficas de Acelerómetro y Giroscopio</h1>
+
+    <!-- Formulario para ingresar parámetros -->
+    <form id="queryForm">
         <label for="sampleID">Sample ID:</label>
-        <input type="text" id="sampleID" placeholder="Enter Sample ID" required>
-        
+        <input type="text" id="sampleID" name="sampleID" required value="1729269895920">
         <label for="evaluatedId">Evaluated ID:</label>
-        <input type="text" id="evaluatedId" placeholder="Enter Evaluated ID" required>
-        
+        <input type="text" id="evaluatedId" name="evaluatedId" required value="1">
         <label for="testTypeId">Test Type ID:</label>
-        <input type="text" id="testTypeId" placeholder="Enter Test Type ID" required>
-        
-        <button id="fetchData">Fetch Data</button>
-    </div>
+        <input type="text" id="testTypeId" name="testTypeId" required value="1">
+        <button type="submit">Consultar y Graficar</button>
+    </form>
 
-    <h2>Sensor 1 Data</h2>
-    <canvas id="sensor1Chart"></canvas>
-    
-    <h2>Sensor 2 Data</h2>
-    <canvas id="sensor2Chart"></canvas>
+    <!-- Contenedores para las gráficas -->
+    <canvas id="sensor1Chart" width="400" height="200"></canvas>
+    <canvas id="sensor2Chart" width="400" height="200"></canvas>
 
-    <script src="../js/view_samples.js"> </script>
+    <script src="../js/view_samples.js"></script>
 </body>
-</html>
 
+</html>
