@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sensor Data Charts</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        canvas {
+            max-width: 600px;
+            margin: 20px;
+        }
+        .input-group {
+            margin: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Sensor Data Charts</h1>
+    
+    <div class="input-group">
+        <label for="sampleID">Sample ID:</label>
+        <input type="text" id="sampleID" placeholder="Enter Sample ID" required>
+        
+        <label for="evaluatedId">Evaluated ID:</label>
+        <input type="text" id="evaluatedId" placeholder="Enter Evaluated ID" required>
+        
+        <label for="testTypeId">Test Type ID:</label>
+        <input type="text" id="testTypeId" placeholder="Enter Test Type ID" required>
+        
+        <button id="fetchData">Fetch Data</button>
+    </div>
+
+    <h2>Sensor 1 Data</h2>
+    <canvas id="sensor1Chart"></canvas>
+    
+    <h2>Sensor 2 Data</h2>
+    <canvas id="sensor2Chart"></canvas>
+
+    <script src="../js/view_samples.js"> </script>
+</body>
+</html>
+
