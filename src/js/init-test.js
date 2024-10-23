@@ -14,6 +14,10 @@ client.connect({
     }
 });
 
+var testInProgress = false;
+
+
+
 
 document.addEventListener('DOMContentLoaded', function () {
     const form = document.getElementById('evaluationForm');
@@ -29,6 +33,17 @@ document.addEventListener('DOMContentLoaded', function () {
     const patientStateDiv = document.getElementById('patientStateDiv');
     const aptitudeDiv = document.getElementById('aptitudeDiv');
     const startTestButton = document.getElementById('iniciarPrueba');
+    const stopTestButton = document.getElementById('stopTest')
+    const stopTestModal = new bootstrap.Modal(document.getElementById('stopTestModal'));
+
+    
+
+    stopTestButton.disabled = true;
+
+    // function toggleStopButton() {
+    //     stopTestButton.disabled = !testInProgress; 
+    // }
+
 
     let currentSampleId = null;
     let currentTestTypeId = null;
@@ -116,7 +131,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
 
                 form.reset();
-                this.disabled = true;
+                testInProgress = false;
+                startTestButton.disabled = true;
+                // toggleStopButton();
+                // this.disabled = true;
                 levodopaTimeDiv.style.display = 'none';
                 patientStateDiv.style.display = 'none';
                 aptitudeDiv.style.display = 'none';
@@ -169,6 +187,9 @@ document.addEventListener('DOMContentLoaded', function () {
     startTestButton.addEventListener('click', function () {
         // Bloquear temporalmente el botón de inicio de prueba
         startTestButton.disabled = true;
+
+        testInProgress = true;
+        stopTestButton.disabled = false;
     
         // Publicar un mensaje para verificar si hay errores
         const checkErrorMessage = 'check_error';
@@ -201,8 +222,11 @@ document.addEventListener('DOMContentLoaded', function () {
                     const mqttTestMessage = new Paho.MQTT.Message(testMessage);
                     mqttTestMessage.destinationName = "test/icesi/dlp";
                     client.send(mqttTestMessage);
+                    
+                    // toggleStopButton();
     
                     console.log(`Prueba iniciada: ${testMessage}`);
+                    
                     alert('Prueba realizada con exito para el paciente con id: ' + evaluatedId);
     
                     // Habilitar el botón nuevamente
@@ -219,11 +243,31 @@ document.addEventListener('DOMContentLoaded', function () {
     
                 setTimeout(() => {
                     startTestButton.disabled = false; // Habilitar el botón después de 5 segundos
+                    stopTestButton.disabled = true;
                 }, 5000); // Bloquear el botón por 5 segundos
             }
         };
     });
     
+
+    stopTestButton.addEventListener('click', () => {
+        // Detener el muestreo enviando un mensaje MQTT al ESP32
+        const message = "stop";
+        const mqttMessage = new Paho.MQTT.Message(message);
+        mqttMessage.destinationName = "test/icesi/dlp";
+
+        client.send(mqttMessage);
+        console.log(`Mensaje enviado: ${message}`);
+        console.log("Muestreo detenido");
+
+        stopTestModal.show();
+
+        testInProgress = false;
+
+        stopTestButton.disabled = true;
+        
+        startTestButton.disabled = false;
+    });
 
 });
     
