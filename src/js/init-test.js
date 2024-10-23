@@ -2,9 +2,9 @@ const okbtn = document.getElementById('okbtn');
 client = new Paho.MQTT.Client('broker.hivemq.com', Number(8000), "ESP32ClienteIcesiA00394479");
 
 //Listener de mensajes
-client.onMessageArrived = function (msg) {
-    console.log("Arrived!: " + msg.payloadString);
-}
+// client.onMessageArrived = function (msg) {
+//     console.log("Arrived!: " + msg.payloadString);
+// }
 
 //Función para conectarse al broker
 client.connect({
@@ -13,6 +13,55 @@ client.connect({
         client.subscribe("test/icesi/dlp");
     }
 });
+
+
+// Manejar la respuesta de la ESP32
+client.onMessageArrived = (message) => {
+    console.log("Arrived!: " + message.payloadString);
+    const response = JSON.parse(message.payloadString);
+
+    if (response.status === "ok") {
+        // Si no hay errores, habilitar el botón e iniciar la prueba
+        console.log('No hay errores, iniciando prueba...');
+
+        const evaluatedId = document.getElementById('evaluatedId').textContent;
+        const testTypeId = testTypeSelect.value;
+        const patientState = document.querySelector('input[name="patientState"]:checked');
+        const aptitudeValue = document.getElementById('aptitude').value;
+
+        // Verificar que todos los campos necesarios no estén vacíos
+        if (evaluatedId && testTypeId && patientState && aptitudeValue) {
+            // Publicar el mensaje para iniciar la prueba
+            const testMessage = `init~~${evaluatedId}~~${testTypeId}`;
+            const mqttTestMessage = new Paho.MQTT.Message(testMessage);
+            mqttTestMessage.destinationName = "test/icesi/dlp";
+            client.send(mqttTestMessage);
+
+            // toggleStopButton();
+
+            console.log(`Prueba iniciada: ${testMessage}`);
+
+            alert('Prueba realizada con exito para el paciente con id: ' + evaluatedId);
+
+            // Habilitar el botón nuevamente
+            startTestButton.disabled = false;
+        } else {
+            alert('Por favor, complete todos los campos requeridos antes de iniciar la prueba.');
+            startTestButton.disabled = false; // Habilitar el botón si faltan campos
+        }
+
+    } else {
+        // Si hay un error, mostrar alerta y desactivar el botón por 5 segundos
+        console.log('Error en la conexión: ' + response.message);
+        alert(`Error: ${response.message}`);
+
+        setTimeout(() => {
+            startTestButton.disabled = false; // Habilitar el botón después de 5 segundos
+            stopTestButton.disabled = true;
+        }, 5000); // Bloquear el botón por 5 segundos
+    }
+};
+
 
 var testInProgress = false;
 
@@ -36,7 +85,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const stopTestButton = document.getElementById('stopTest')
     const stopTestModal = new bootstrap.Modal(document.getElementById('stopTestModal'));
 
-    
+
 
     stopTestButton.disabled = true;
 
@@ -95,7 +144,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     startTestButton.disabled = true; // Deshabilitar el botón
                     // Ocultar el contenedor de información del evaluado si no se encuentra
                     document.getElementById('evaluatedInfoDiv').style.display = 'none';
-                }); 
+                });
         } else {
             alert('Por favor, ingrese el ID del evaluado');
         }
@@ -113,14 +162,14 @@ document.addEventListener('DOMContentLoaded', function () {
             try {
                 if (currentSampleId && currentTestTypeId) {
                     const evaluatedId = document.getElementById('evaluatedId').textContent;
-                    
+
                     const response = await fetch(
-                        `http://localhost:8080/api/samples?evaluatedId=${evaluatedId}&id=${currentSampleId}&testTypeId=${currentTestTypeId}`, 
+                        `http://localhost:8080/api/samples?evaluatedId=${evaluatedId}&id=${currentSampleId}&testTypeId=${currentTestTypeId}`,
                         {
                             method: 'DELETE'
                         }
                     );
-    
+
                     if (!response.ok) {
                         if (response.status === 404) {
                             console.log('La muestra ya no existe en la base de datos');
@@ -143,11 +192,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 document.getElementById('evaluatedInfoDiv').style.display = 'none';
                 document.getElementById('testDescriptionDiv').style.display = 'none';
                 document.getElementById('resultSpace').innerHTML = 'Espacio para mostrar la gráfica resultante';
-                
+
                 currentSampleId = null;
                 currentTestTypeId = null;
                 testTypeMapping.clear();
-    
+
             } catch (error) {
                 console.error('Error during reset:', error);
                 alert('Hubo un error al reiniciar la prueba. Por favor, intente nuevamente.');
@@ -190,65 +239,20 @@ document.addEventListener('DOMContentLoaded', function () {
 
         testInProgress = true;
         stopTestButton.disabled = false;
-    
+
         // Publicar un mensaje para verificar si hay errores
         const checkErrorMessage = 'check_error';
         const mqttCheckMessage = new Paho.MQTT.Message(checkErrorMessage);
-        mqttCheckMessage.destinationName = "test/icesi/dlp/check";
+        // mqttCheckMessage.destinationName = "test/icesi/dlp/check";
+        mqttCheckMessage.destinationName = "test/icesi/dlp";
         client.send(mqttCheckMessage);
-    
-        console.log('Mensaje enviado para verificar errores');
-    
-        // Suscribirse al tópico para esperar la respuesta
-        client.subscribe("test/icesi/dlp/check_response");
-    
-        // Manejar la respuesta de la ESP32
-        client.onMessageArrived = function (message) {
-            const response = JSON.parse(message.payloadString);
-    
-            if (response.status === "ok") {
-                // Si no hay errores, habilitar el botón e iniciar la prueba
-                console.log('No hay errores, iniciando prueba...');
-    
-                const evaluatedId = document.getElementById('evaluatedId').textContent;
-                const testTypeId = testTypeSelect.value;
-                const patientState = document.querySelector('input[name="patientState"]:checked');
-                const aptitudeValue = document.getElementById('aptitude').value;
-    
-                // Verificar que todos los campos necesarios no estén vacíos
-                if (evaluatedId && testTypeId && patientState && aptitudeValue) {
-                    // Publicar el mensaje para iniciar la prueba
-                    const testMessage = `init~~${evaluatedId}~~${testTypeId}`;
-                    const mqttTestMessage = new Paho.MQTT.Message(testMessage);
-                    mqttTestMessage.destinationName = "test/icesi/dlp";
-                    client.send(mqttTestMessage);
-                    
-                    // toggleStopButton();
-    
-                    console.log(`Prueba iniciada: ${testMessage}`);
-                    
-                    alert('Prueba realizada con exito para el paciente con id: ' + evaluatedId);
-    
-                    // Habilitar el botón nuevamente
-                    startTestButton.disabled = false;
-                } else {
-                    alert('Por favor, complete todos los campos requeridos antes de iniciar la prueba.');
-                    startTestButton.disabled = false; // Habilitar el botón si faltan campos
-                }
-    
-            } else {
-                // Si hay un error, mostrar alerta y desactivar el botón por 5 segundos
-                console.log('Error en la conexión: ' + response.message);
-                alert(`Error: ${response.message}`);
-    
-                setTimeout(() => {
-                    startTestButton.disabled = false; // Habilitar el botón después de 5 segundos
-                    stopTestButton.disabled = true;
-                }, 5000); // Bloquear el botón por 5 segundos
-            }
-        };
+
+        console.log('Mensaje enviado para verificar errores.');
+
+        // // Suscribirse al tópico para esperar la respuesta
+        // client.subscribe("test/icesi/dlp/check_response");
     });
-    
+
 
     stopTestButton.addEventListener('click', () => {
         // Detener el muestreo enviando un mensaje MQTT al ESP32
@@ -265,9 +269,8 @@ document.addEventListener('DOMContentLoaded', function () {
         testInProgress = false;
 
         stopTestButton.disabled = true;
-        
+
         startTestButton.disabled = false;
     });
 
 });
-    
