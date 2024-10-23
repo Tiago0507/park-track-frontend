@@ -5,9 +5,13 @@ document.getElementById('queryForm').addEventListener('submit', function(event) 
     event.preventDefault();
     
     const sampleID = document.getElementById('sampleID').value;
-    const evaluatedId = document.getElementById('evaluatedId').value;
+    const evaluatedId = document.getElementById('evaluatedIdChart').value;
     const testTypeId = document.getElementById('testTypeId').value;
 
+    if (!sampleID || !evaluatedId || !testTypeId) {
+        alert("Todos los campos son obligatorios.");
+        return;
+    }
     // URL del endpoint con parámetros dinámicos
     const url = `http://localhost:8080/hardware_controller/sample?sampleID=${sampleID}&evaluatedId=${evaluatedId}&testTypeId=${testTypeId}`;
 
@@ -85,42 +89,49 @@ function createChart(canvasId, data, label) {
                     data: data.axData,
                     backgroundColor: 'rgba(255, 99, 132, 0.6)',
                     borderColor: 'rgba(255, 99, 132, 1)',
-                    pointRadius: 5
+                    pointRadius: 5,
+                    showLine: true
                 },
                 {
                     label: `${label} - ay`,
                     data: data.ayData,
                     backgroundColor: 'rgba(54, 162, 235, 0.6)',
                     borderColor: 'rgba(54, 162, 235, 1)',
-                    pointRadius: 5
+                    pointRadius: 5,
+
+                    showLine: true
                 },
                 {
                     label: `${label} - az`,
                     data: data.azData,
                     backgroundColor: 'rgba(75, 192, 192, 0.6)',
                     borderColor: 'rgba(75, 192, 192, 1)',
-                    pointRadius: 5
+                    pointRadius: 5,
+                    showLine: true
                 },
                 {
                     label: `${label} - gx`,
                     data: data.gxData,
                     backgroundColor: 'rgba(255, 206, 86, 0.6)',
                     borderColor: 'rgba(255, 206, 86, 1)',
-                    pointRadius: 5
+                    pointRadius: 5,
+                    showLine: true
                 },
                 {
                     label: `${label} - gy`,
                     data: data.gyData,
                     backgroundColor: 'rgba(153, 102, 255, 0.6)',
                     borderColor: 'rgba(153, 102, 255, 1)',
-                    pointRadius: 5
+                    pointRadius: 5,
+                    showLine: true
                 },
                 {
                     label: `${label} - gz`,
                     data: data.gzData,
                     backgroundColor: 'rgba(255, 159, 64, 0.6)',
                     borderColor: 'rgba(255, 159, 64, 1)',
-                    pointRadius: 5
+                    pointRadius: 5,
+                    showLine: true
                 }
             ]
         },
