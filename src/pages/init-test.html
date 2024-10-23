@@ -94,9 +94,28 @@
                     </div>
                     <button type="submit" class="btn btn-primary" id="iniciarPrueba" disabled>Iniciar prueba</button>
                     <button type="button" class="btn btn-secondary" id="restartTest" disabled>Reiniciar prueba</button>
+                    <button type="button" class="btn btn-danger" id="stopTest">Detener prueba</button>
                 </form>
             </div>
         </div>
+
+        <div class="modal fade" id="stopTestModal" tabindex="-1" aria-labelledby="stopTestModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="stopTestModalLabel">Prueba detenida</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        La prueba ha sido detenida correctamente.
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
         <div class="mt-4">
             <h2>Resultado</h2>
             <div class="card">

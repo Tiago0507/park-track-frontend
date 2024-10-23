@@ -14,6 +14,8 @@ client.connect({
     }
 });
 
+var testInProgress = false;
+
 
 document.addEventListener('DOMContentLoaded', function () {
     const form = document.getElementById('evaluationForm');
@@ -29,6 +31,11 @@ document.addEventListener('DOMContentLoaded', function () {
     const patientStateDiv = document.getElementById('patientStateDiv');
     const aptitudeDiv = document.getElementById('aptitudeDiv');
     const startTestButton = document.getElementById('iniciarPrueba');
+    const stopTestButton = document.getElementById('stopTest')
+    const stopTestModal = new bootstrap.Modal(document.getElementById('stopTestModal'));
+
+    stopTestButton.disabled = true;
+
 
     stateOffRadio.addEventListener('change', function () {
         levodopaTimeDiv.style.display = this.checked ? 'block' : 'none';
@@ -95,6 +102,10 @@ document.addEventListener('DOMContentLoaded', function () {
         patientStateDiv.style.display = 'none';
         aptitudeDiv.style.display = 'none';
         startTestButton.disabled = true; // Deshabilitar el botón al reiniciar la prueba
+
+        stopTestButton.disabled = true;
+
+        testInProgress = false;
     });
 
     // Manejar el cambio en el selector de tipo de prueba
@@ -137,9 +148,34 @@ document.addEventListener('DOMContentLoaded', function () {
             client.send(mqttMessage);
 
             console.log(`Mensaje enviado: ${message}`);
+
+            testInProgress = true;
+
+            stopTestButton.disabled = false;
+
+            startTestButton.disabled = true;
         } else {
             alert('Por favor, complete todos los campos requeridos antes de iniciar la prueba.');
         }
+    });
+
+    stopTestButton.addEventListener('click', () => {
+        // Detener el muestreo enviando un mensaje MQTT al ESP32
+        const message = "stop";
+        const mqttMessage = new Paho.MQTT.Message(message);
+        mqttMessage.destinationName = "test/icesi/dlp";
+
+        client.send(mqttMessage);
+        console.log(`Mensaje enviado: ${message}`);
+        console.log("Muestreo detenido");
+
+        stopTestModal.show();
+
+        testInProgress = false;
+
+        stopTestButton.disabled = true;
+        
+        startTestButton.disabled = false;
     });
 
 });
