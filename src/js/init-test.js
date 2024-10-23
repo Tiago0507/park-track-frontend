@@ -16,51 +16,25 @@ client.connect({
 
 
 // Manejar la respuesta de la ESP32
-client.onMessageArrived = (message) => {
-    console.log("Arrived!: " + message.payloadString);
-    const response = JSON.parse(message.payloadString);
+// client.onMessageArrived = (message) => {
+//     console.log("Arrived!: " + message.payloadString);
+//     const response = JSON.parse(message.payloadString);
 
-    if (response.status === "ok") {
-        // Si no hay errores, habilitar el botón e iniciar la prueba
-        console.log('No hay errores, iniciando prueba...');
+//     if (response.status === "ok") {
+//         // Si no hay errores, habilitar el botón e iniciar la prueba
+//         console.log('No hay errores, iniciando prueba...');
 
-        const evaluatedId = document.getElementById('evaluatedId').textContent;
-        const testTypeId = testTypeSelect.value;
-        const patientState = document.querySelector('input[name="patientState"]:checked');
-        const aptitudeValue = document.getElementById('aptitude').value;
+//     } else {
+//         // Si hay un error, mostrar alerta y desactivar el botón por 5 segundos
+//         console.log('Error en la conexión: ' + response.message);
+//         alert(`Error: ${response.message}`);
 
-        // Verificar que todos los campos necesarios no estén vacíos
-        if (evaluatedId && testTypeId && patientState && aptitudeValue) {
-            // Publicar el mensaje para iniciar la prueba
-            const testMessage = `init~~${evaluatedId}~~${testTypeId}`;
-            const mqttTestMessage = new Paho.MQTT.Message(testMessage);
-            mqttTestMessage.destinationName = "test/icesi/dlp";
-            client.send(mqttTestMessage);
-
-            // toggleStopButton();
-
-            console.log(`Prueba iniciada: ${testMessage}`);
-
-            alert('Prueba realizada con exito para el paciente con id: ' + evaluatedId);
-
-            // Habilitar el botón nuevamente
-            startTestButton.disabled = false;
-        } else {
-            alert('Por favor, complete todos los campos requeridos antes de iniciar la prueba.');
-            startTestButton.disabled = false; // Habilitar el botón si faltan campos
-        }
-
-    } else {
-        // Si hay un error, mostrar alerta y desactivar el botón por 5 segundos
-        console.log('Error en la conexión: ' + response.message);
-        alert(`Error: ${response.message}`);
-
-        setTimeout(() => {
-            startTestButton.disabled = false; // Habilitar el botón después de 5 segundos
-            stopTestButton.disabled = true;
-        }, 5000); // Bloquear el botón por 5 segundos
-    }
-};
+//         setTimeout(() => {
+//             startTestButton.disabled = false; // Habilitar el botón después de 5 segundos
+//             stopTestButton.disabled = true;
+//         }, 5000); // Bloquear el botón por 5 segundos
+//     }
+// };
 
 
 var testInProgress = false;
@@ -82,12 +56,12 @@ document.addEventListener('DOMContentLoaded', function () {
     const patientStateDiv = document.getElementById('patientStateDiv');
     const aptitudeDiv = document.getElementById('aptitudeDiv');
     const startTestButton = document.getElementById('iniciarPrueba');
-    const stopTestButton = document.getElementById('stopTest')
-    const stopTestModal = new bootstrap.Modal(document.getElementById('stopTestModal'));
+    // const stopTestButton = document.getElementById('stopTest')
+    // const stopTestModal = new bootstrap.Modal(document.getElementById('stopTestModal'));
 
 
 
-    stopTestButton.disabled = true;
+    // stopTestButton.disabled = true;
 
     // function toggleStopButton() {
     //     stopTestButton.disabled = !testInProgress; 
@@ -162,9 +136,12 @@ document.addEventListener('DOMContentLoaded', function () {
             try {
                 if (currentSampleId && currentTestTypeId) {
                     const evaluatedId = document.getElementById('evaluatedId').textContent;
+                    console.log('ID del evaluado:', evaluatedId);
+                    console.log('ID del tipo de prueba:', currentTestTypeId);
+                    console.log('Eliminando muestra:', currentSampleId);
 
                     const response = await fetch(
-                        `http://localhost:8080/api/samples?evaluatedId=${evaluatedId}&id=${currentSampleId}&testTypeId=${currentTestTypeId}`,
+                        `http://localhost:8080/api/samples?evaluatedIdNumber=${evaluatedId}&id=${currentSampleId}&testTypeId=${currentTestTypeId}`,
                         {
                             method: 'DELETE'
                         }
@@ -238,39 +215,65 @@ document.addEventListener('DOMContentLoaded', function () {
         startTestButton.disabled = true;
 
         testInProgress = true;
-        stopTestButton.disabled = false;
+        // stopTestButton.disabled = false;
 
         // Publicar un mensaje para verificar si hay errores
-        const checkErrorMessage = 'check_error';
-        const mqttCheckMessage = new Paho.MQTT.Message(checkErrorMessage);
-        // mqttCheckMessage.destinationName = "test/icesi/dlp/check";
-        mqttCheckMessage.destinationName = "test/icesi/dlp";
-        client.send(mqttCheckMessage);
+        // const checkErrorMessage = 'check_error';
+        // const mqttCheckMessage = new Paho.MQTT.Message(checkErrorMessage);
+        // // mqttCheckMessage.destinationName = "test/icesi/dlp/check";
+        // mqttCheckMessage.destinationName = "test/icesi/dlp";
+        // client.send(mqttCheckMessage);
+        const evaluatedId = document.getElementById('evaluatedId').textContent;
+        const testTypeId = testTypeSelect.value;
+        const patientState = document.querySelector('input[name="patientState"]:checked');
+        const aptitudeValue = document.getElementById('aptitude').value;
 
-        console.log('Mensaje enviado para verificar errores.');
+        // Verificar que todos los campos necesarios no estén vacíos
+        if (evaluatedId && testTypeId && patientState && aptitudeValue) {
+            // Publicar el mensaje para iniciar la prueba
+            const testMessage = `init~~${evaluatedId}~~${testTypeId}`;
+            const mqttTestMessage = new Paho.MQTT.Message(testMessage);
+            mqttTestMessage.destinationName = "test/icesi/dlp";
+            client.send(mqttTestMessage);
+
+            // toggleStopButton();
+
+            console.log(`Prueba iniciada: ${testMessage}`);
+            setTimeout(() => {
+                alert('Prueba realizada con exito para el paciente con id: ' + evaluatedId);
+
+                // Habilitar el botón nuevamente
+                startTestButton.disabled = false;
+            }, 5500)
+        } else {
+            alert('Por favor, complete todos los campos requeridos antes de iniciar la prueba.');
+            startTestButton.disabled = false; // Habilitar el botón si faltan campos
+        }
+
+        // console.log('Mensaje enviado para verificar errores.');
 
         // // Suscribirse al tópico para esperar la respuesta
         // client.subscribe("test/icesi/dlp/check_response");
     });
 
 
-    stopTestButton.addEventListener('click', () => {
-        // Detener el muestreo enviando un mensaje MQTT al ESP32
-        const message = "stop";
-        const mqttMessage = new Paho.MQTT.Message(message);
-        mqttMessage.destinationName = "test/icesi/dlp";
+    // stopTestButton.addEventListener('click', () => {
+    //     // Detener el muestreo enviando un mensaje MQTT al ESP32
+    //     const message = "stop";
+    //     const mqttMessage = new Paho.MQTT.Message(message);
+    //     mqttMessage.destinationName = "test/icesi/dlp";
 
-        client.send(mqttMessage);
-        console.log(`Mensaje enviado: ${message}`);
-        console.log("Muestreo detenido");
+    //     client.send(mqttMessage);
+    //     console.log(`Mensaje enviado: ${message}`);
+    //     console.log("Muestreo detenido");
 
-        stopTestModal.show();
+    //     stopTestModal.show();
 
-        testInProgress = false;
+    //     testInProgress = false;
 
-        stopTestButton.disabled = true;
+    //     stopTestButton.disabled = true;
 
-        startTestButton.disabled = false;
-    });
+    //     startTestButton.disabled = false;
+    // });
 
 });
