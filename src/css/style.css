@@ -1,0 +1,41 @@
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f0f4f7;
+}
+
+#sidebar {
+    height: 100vh;
+}
+
+.nav-link {
+    padding: 10px 20px;
+}
+
+.nav-link:hover {
+    background-color: #2a2f3a;
+}
+
+.nav-item .nav-link.active {
+    background-color: #2a2f3a;
+    border-radius: 4px;
+}
+
+.card {
+    border: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.card-body h3 {
+    font-size: 2rem;
+    font-weight: 600;
+}
+
+.card-body ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.card-body ul li {
+    margin-bottom: 5px;
+    font-size: 0.9rem;
+}
