@@ -3,7 +3,11 @@
   font-weight: normal;
   font-style: normal;
   src: url("../fonts/boxicons.eot");
-  src: url("../fonts/boxicons.eot") format("embedded-opentype"), url("../fonts/boxicons.woff2") format("woff2"), url("../fonts/boxicons.woff") format("woff"), url("../fonts/boxicons.ttf") format("truetype"), url("../fonts/boxicons.svg?#boxicons") format("svg");
+  src: url("../fonts/boxicons.eot") format("embedded-opentype"),
+    url("../fonts/boxicons.woff2") format("woff2"),
+    url("../fonts/boxicons.woff") format("woff"),
+    url("../fonts/boxicons.ttf") format("truetype"),
+    url("../fonts/boxicons.svg?#boxicons") format("svg");
 }
 .bx {
   font-family: "boxicons" !important;
@@ -14,7 +18,6 @@
   text-rendering: auto;
   display: inline-block;
   text-transform: none;
-  speak: none;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -205,15 +208,21 @@
     -webkit-transform: scale3d(1, 1, 1);
     transform: scale3d(1, 1, 1);
   }
-  10%, 20% {
+  10%,
+  20% {
     -webkit-transform: scale3d(0.95, 0.95, 0.95) rotate3d(0, 0, 1, -10deg);
     transform: scale3d(0.95, 0.95, 0.95) rotate3d(0, 0, 1, -10deg);
   }
-  30%, 50%, 70%, 90% {
+  30%,
+  50%,
+  70%,
+  90% {
     -webkit-transform: scale3d(1, 1, 1) rotate3d(0, 0, 1, 10deg);
     transform: scale3d(1, 1, 1) rotate3d(0, 0, 1, 10deg);
   }
-  40%, 60%, 80% {
+  40%,
+  60%,
+  80% {
     -webkit-transform: scale3d(1, 1, 1) rotate3d(0, 0, 1, -10deg);
     transform: scale3d(1, 1, 1) rotate3d(0, 0, 1, -10deg);
   }
@@ -227,15 +236,21 @@
     -webkit-transform: scale3d(1, 1, 1);
     transform: scale3d(1, 1, 1);
   }
-  10%, 20% {
+  10%,
+  20% {
     -webkit-transform: scale3d(0.95, 0.95, 0.95) rotate3d(0, 0, 1, -10deg);
     transform: scale3d(0.95, 0.95, 0.95) rotate3d(0, 0, 1, -10deg);
   }
-  30%, 50%, 70%, 90% {
+  30%,
+  50%,
+  70%,
+  90% {
     -webkit-transform: scale3d(1, 1, 1) rotate3d(0, 0, 1, 10deg);
     transform: scale3d(1, 1, 1) rotate3d(0, 0, 1, 10deg);
   }
-  40%, 60%, 80% {
+  40%,
+  60%,
+  80% {
     -webkit-transform: rotate3d(0, 0, 1, -10deg);
     transform: rotate3d(0, 0, 1, -10deg);
   }
@@ -362,26 +377,31 @@
 .bx-rotate-90 {
   transform: rotate(90deg);
   -ms-filter: "progid:DXImageTransform.Microsoft.BasicImage(rotation=1)";
+  filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=1);
 }
 
 .bx-rotate-180 {
   transform: rotate(180deg);
   -ms-filter: "progid:DXImageTransform.Microsoft.BasicImage(rotation=2)";
+  filter: "progid:DXImageTransform.Microsoft.BasicImage(rotation=2)";
 }
 
 .bx-rotate-270 {
   transform: rotate(270deg);
   -ms-filter: "progid:DXImageTransform.Microsoft.BasicImage(rotation=3)";
+  filter: "progid:DXImageTransform.Microsoft.BasicImage(rotation=3)";
 }
 
 .bx-flip-horizontal {
   transform: scaleX(-1);
   -ms-filter: "progid:DXImageTransform.Microsoft.BasicImage(rotation=0, mirror=1)";
+  filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=0, mirror=1);
 }
 
 .bx-flip-vertical {
   transform: scaleY(-1);
   -ms-filter: "progid:DXImageTransform.Microsoft.BasicImage(rotation=2, mirror=1)";
+  filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=2, mirror=1);
 }
 
 .bx-border {
@@ -6507,5 +6527,9 @@
   font-weight: normal;
   font-style: normal;
   src: url("../fonts/boxicons/boxicons.eot");
-  src: url("../fonts/boxicons/boxicons.eot") format("embedded-opentype"), url("../fonts/boxicons/boxicons.woff2") format("woff2"), url("../fonts/boxicons/boxicons.woff") format("woff"), url("../fonts/boxicons/boxicons.ttf") format("truetype"), url("../fonts/boxicons/boxicons.svg?#boxicons") format("svg");
+  src: url("../fonts/boxicons/boxicons.eot") format("embedded-opentype"),
+    url("../fonts/boxicons/boxicons.woff2") format("woff2"),
+    url("../fonts/boxicons/boxicons.woff") format("woff"),
+    url("../fonts/boxicons/boxicons.ttf") format("truetype"),
+    url("../fonts/boxicons/boxicons.svg?#boxicons") format("svg");
 }
