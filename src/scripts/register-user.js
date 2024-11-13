@@ -35,7 +35,7 @@ function submitForm() {
 
     console.log(userData);
     // Realizar la solicitud de registro
-    fetch(`http://127.0.0.1:8080/${userType === "evaluator" ? "evaluators" : "patients"}/add`, {
+    fetch(`http://127.0.0.1:8080/evaluated/add`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json"

@@ -22,16 +22,32 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
         // Save token to localStorage
         localStorage.setItem("token", data.token);
 
-        alert("Login successful");
+        // Decode the JWT to get the role
+        const role = getRoleFromToken(data.token);
+
+        // Redirect based on role
+        if (role === "ADMIN") {
+            window.location.replace("/src/screens/admin/search-admin.html");
+        } else if (role === "EVALUATOR") {
+            window.location.replace("/src/screens/evaluator/search-evaluator.html");
+        } else {
+            throw new Error("Unrecognized role");
+        }
     } catch (error) {
         console.error("Error:", error);
-        alert("Error during login");
+        alert("Error during login this is what i know" + error);
     }
 });
 
 // Function to retrieve token from localStorage for other requests
 function getToken() {
     return localStorage.getItem("token");
+}
+
+// Function to decode JWT and retrieve the role
+function getRoleFromToken(token) {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload.role; 
 }
 
 // Example: Function to make authenticated requests
