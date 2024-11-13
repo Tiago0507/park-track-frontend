@@ -42,13 +42,35 @@ function submitForm() {
         },
         body: JSON.stringify(userData)
     })
-        .then(response => response.json())
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            } else {
+                // Manejo de errores según el status
+                if (response.status === 409) {
+                    throw new Error("Usuario duplicado");
+                } else {
+                    throw new Error("Error en el registro. Código de estado: " + response.status);
+                }
+            }
+        })
         .then(data => {
             alert(`${userType === "evaluator" ? "Evaluador" : "Evaluado"} registrado con éxito`);
             resetForm();
         })
-        .catch(error => console.error("Error al registrar:", error));
-
+        .catch(error => {
+            if (error && error.message) {
+                // Manejo de error específico para el usuario duplicado
+                if (error.message.includes("duplicate key")) {
+                    alert("Error: El usuario ya existe con ese nombre de usuario.");
+                } else {
+                    alert("Error al registrar el usuario: " + error.message);
+                }
+            } else {
+                // Manejo de errores generales
+                alert("Ocurrió un error inesperado al registrar. Por favor, intente de nuevo.");
+            }
+        });
 }
 
 function resetForm() {
