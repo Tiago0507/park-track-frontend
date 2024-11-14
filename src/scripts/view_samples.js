@@ -1,9 +1,9 @@
-   let sensor1ChartInstance = null;
+let sensor1ChartInstance = null;
 let sensor2ChartInstance = null;
 
-document.getElementById('queryForm').addEventListener('submit', function(event) {
+document.getElementById('evaluationForm').addEventListener('submit', function (event) {
     event.preventDefault();
-    
+
     const sampleID = document.getElementById('sampleID').value;
     const evaluatedId = document.getElementById('evaluatedIdChart').value;
     const testTypeId = document.getElementById('testTypeId').value;
