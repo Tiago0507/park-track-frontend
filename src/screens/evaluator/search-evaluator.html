@@ -6,24 +6,16 @@
     <meta charset="utf-8" />
     <meta name="viewport"
         content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
-
     <title>Buscar evaluado</title>
-
     <meta name="description" content="" />
-
     <link rel="icon" type="image/x-icon" href="../../../assets/images/favicon/favicon.ico" />
-
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-        href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap"
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap"
         rel="stylesheet" />
-
     <link rel="stylesheet" href="../../../assets/vendor/fonts/boxicons.css" />
-
     <link rel="stylesheet" href="../../../assets/vendor/css/core.css" class="template-customizer-core-css" />
     <link rel="stylesheet" href="../../../assets/vendor/css/theme-default.css" class="template-customizer-theme-css" />
-
     <link rel="stylesheet" href="../../../assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css" />
     <script src="../../../assets/vendor/js/helpers.js"></script>
     <script src="../../../assets/js/config.js"></script>
@@ -49,7 +41,6 @@
             user-select: none;
         }
     </style>
-
 </head>
 
 <body>
@@ -72,9 +63,7 @@
                 <span class="app-brand-text demo menu-text fw-bolder ms-2">Park-Track</span>
             </a>
 
-
             <ul class="navbar-nav flex-row align-items-center">
-                <!-- User -->
                 <li class="nav-item navbar-dropdown dropdown-user dropdown">
                     <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
                         <div class="avatar avatar-online">
@@ -102,7 +91,6 @@
                         <li>
                             <div class="dropdown-divider"></div>
                         </li>
-
                         <li>
                             <a class="dropdown-item" href="./../index.html">
                                 <i class="bx bx-power-off me-2"></i>
@@ -119,6 +107,56 @@
             <div class="card">
                 <div class="card-header">
                     <h3>Lista de evaluados</h3>
+                </div>
+                <div class="card-body">
+                    <form id="filterForm">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <label for="startDate">Fecha de inicio</label>
+                                <input type="date" id="startDate" class="form-control">
+                            </div>
+                            <div class="col-md-3">
+                                <label for="endDate">Fecha de fin</label>
+                                <input type="date" id="endDate" class="form-control">
+                            </div>
+                            <div class="col-md-3">
+                                <label for="nameRangeStart">Nombre desde</label>
+                                <input type="text" id="nameRangeStart" class="form-control">
+                            </div>
+                            <div class="col-md-3">
+                                <label for="nameRangeEnd">Nombre hasta</label>
+                                <input type="text" id="nameRangeEnd" class="form-control">
+                            </div>
+                            <div class="col-md-3">
+                                <label for="typeOfEvaluated">Tipo de evaluado</label>
+                                <select id="typeOfEvaluated" class="form-control">
+                                    <option value="">Seleccionar</option>
+                                    <option value="Paciente">Paciente</option>
+                                    <option value="Control">Control</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="sortBy">Ordenar por</label>
+                                <select id="sortBy" class="form-control">
+                                    <option value="firstName">Nombre</option>
+                                    <option value="lastName">Apellido</option>
+                                    <option value="dateOfBirth">Fecha de nacimiento</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="sortDirection">Dirección</label>
+                                <select id="sortDirection" class="form-control">
+                                    <option value="asc">Ascendente</option>
+                                    <option value="desc">Descendente</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-md-12">
+                                <button type="submit" class="btn btn-primary">Filtrar</button>
+                            </div>
+                        </div>
+                    </form>
                 </div>
                 <div class="table-responsive text-nowrap" style="max-height: 234px; overflow-y: auto;">
                     <table class="table">
@@ -148,12 +186,10 @@
     <script src="../../../assets/vendor/libs/popper/popper.js"></script>
     <script src="../../../assets/vendor/js/bootstrap.js"></script>
     <script src="../../../assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
-
     <script src="../../../assets/vendor/js/menu.js"></script>
     <script src="../../../assets/js/main.js"></script>
-
     <script async defer src="https://buttons.github.io/buttons.js"></script>
     <script src="./../../scripts/evaluatedlist.js"></script>
+    <script src="./../../scripts/filterEvaluated.js"></script>
 </body>
-
 </html>
