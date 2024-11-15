@@ -33,13 +33,7 @@
             top: 0;
             background-color: #f8f9fa;
             z-index: 1;
-        }
-
-        .table thead th {
-            position: sticky;
-            top: 0;
-            background-color: #f8f9fa;
-            z-index: 1;
+            text-align: left;
         }
 
         .table tbody tr {
@@ -134,44 +128,9 @@
                                 <th>Nombre</th>
                                 <th>Apellido</th>
                                 <th>Email</th>
-                                <th>Opciones</th>
                             </tr>
                         </thead>
-                        <tbody class="table-border-bottom-0">
-                            <tr onclick="window.location.href='evaluated-detail.html?id=XXXXXX'">
-                                <td>XXXXXX</td>
-                                <td>Santiago</td>
-                                <td>Valencia</td>
-                                <td>email@email.com</td>
-
-                            </tr>
-                            <tr onclick="window.location.href='detalles-evaluado.html?id=XXXXXX'">
-                                <td>XXXXXX</td>
-                                <td>Juan</td>
-                                <td>Moreno</td>
-                                <td>email@email.com</td>
-                            </tr>
-                            <tr onclick="window.location.href='detalles-evaluado.html?id=XXXXXX'">
-                                <td>XXXXXX</td>
-                                <td>Santiago</td>
-                                <td>Valencia</td>
-                                <td>email@email.com</td>
-
-                            </tr>
-                            <tr onclick="window.location.href='detalles-evaluado.html?id=XXXXXX'">
-                                <td>XXXXXX</td>
-                                <td>Santiago</td>
-                                <td>Valencia</td>
-                                <td>email@email.com</td>
-
-                            </tr>
-                            <tr onclick="window.location.href='detalles-evaluado.html?id=XXXXXX'">
-                                <td>XXXXXX</td>
-                                <td>Santiago</td>
-                                <td>Valencia</td>
-                                <td>email@email.com</td>
-
-                            </tr>
+                        <tbody class="table-border-bottom-0" id="evaluated-list">
                         </tbody>
                     </table>
                 </div>
@@ -179,13 +138,12 @@
             <div class="d-flex justify-content-end mt-4">
                 <a href="/src/screens/evaluator/register-evaluated.html">
                     <button type="button" class="btn btn-primary">
-                        <span class="tf-icons bx bx-user-plus"></span>&nbsp; Agregar evaluado
+                        <span class="tf-icons bx bx-user-plus"></span>  Agregar evaluado
                     </button>
                 </a>
             </div>
         </div>
     </div>
-
     <script src="../../../assets/vendor/libs/jquery/jquery.js"></script>
     <script src="../../../assets/vendor/libs/popper/popper.js"></script>
     <script src="../../../assets/vendor/js/bootstrap.js"></script>
@@ -195,6 +153,7 @@
     <script src="../../../assets/js/main.js"></script>
 
     <script async defer src="https://buttons.github.io/buttons.js"></script>
+    <script src="./../../scripts/evaluatedlist.js"></script>
 </body>
 
 </html>
