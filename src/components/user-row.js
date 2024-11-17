@@ -4,16 +4,19 @@ export default class UserRow {
     }
 
     render() {
+        if (this.user.role === 'ADMIN') {
+            return null;
+        }
+        
         let row = document.createElement('tr');
-
         let userIdNumber = document.createElement('td');
         userIdNumber.textContent = this.user.idNumber;
 
         let userName = document.createElement('td');
-        userName.textContent = this.user.firstname;
+        userName.textContent = this.user.firstName;
 
         let userLastname = document.createElement('td');
-        userLastname.textContent = this.user.lastname;
+        userLastname.textContent = this.user.lastName;
 
         let userEmail = document.createElement('td');
         userEmail.textContent = this.user.email;
@@ -21,12 +24,14 @@ export default class UserRow {
         let userType = document.createElement('td');
         let userTypeSpan = document.createElement('span');
         userTypeSpan.classList.add('badge', 'me-1');
-        if (this.user.userType === 'EVALUATOR') {
-            userTypeSpan.classList.add('bg-label-success');
+        if(this.user.role === 'EVALUATOR') {
             userTypeSpan.textContent = 'Evaluador';
-        } else if (this.user.userType === 'EVALUATED') {
-            userTypeSpan.classList.add('bg-label-primary');
-            userTypeSpan.textContent = 'Evaluado';
+            userTypeSpan.classList.add('bg-label-success');
+        }else if(this.user.typeOfEvaluated) {
+            userTypeSpan.textContent = this.user.typeOfEvaluated === 'Paciente' ? 'Paciente' : 'Control';
+            userTypeSpan.classList.add(
+                this.user.typeOfEvaluated === 'Paciente' ? 'bg-label-primary' : 'bg-label-info'
+            );
         }
         userType.appendChild(userTypeSpan);
 
@@ -60,7 +65,7 @@ export default class UserRow {
         dropdown.appendChild(dropdownMenu);
         userAction.appendChild(dropdown);
 
-        row.appendChild(userId);
+        row.appendChild(userIdNumber);
         row.appendChild(userName);
         row.appendChild(userLastname);
         row.appendChild(userEmail);
