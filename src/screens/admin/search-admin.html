@@ -128,25 +128,55 @@
                 </div>
             </div>
 
-            <!-- Confirmation Modal -->
             <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel"
                 aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h5 class="modal-title" id="confirmDeleteModalLabel">Confirmar Eliminacion</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            <h5 class="modal-title" id="confirmDeleteModalLabel">Confirmar eliminación</h5>
                         </div>
                         <div class="modal-body">
-                            Estas seguro de borrar este evaluador, esta accion no puede ser revertida?
+                        
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                            <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Si, Eliminar</button>
+                            <button type="button" class="btn btn-secondary" id="cancelDeleteBtn" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Eliminar</button>
                         </div>
                     </div>
                 </div>
             </div>
+            <div class="modal fade" id="deleteSuccessModal" tabindex="-1" aria-labelledby="deleteSuccessModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="deleteSuccessModalLabel">Usuario eliminado</h5>
+                        </div>
+                        <div class="modal-body">
+                            El usuario ha sido eliminado correctamente.
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-primary" data-bs-dismiss="modal" id="closeSuccessBtn">Cerrar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal fade" id="deleteErrorModal" tabindex="-1" aria-labelledby="deleteErrorModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="deleteErrorModalLabel">Error al eliminar</h5>
+                        </div>
+                        <div class="modal-body">
+                            Hubo un error al intentar eliminar el usuario. Por favor, intente nuevamente.
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-primary" data-bs-dismiss="modal" id="closeFailBtn">Cerrar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
             <div class="d-flex justify-content-end mt-4">
                 <a href="/src/screens//admin/register-user.html">
                     <button type="button" class="btn btn-primary">

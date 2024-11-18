@@ -1,6 +1,7 @@
 export default class UserRow {
-    constructor(user) {
+    constructor(user, onDelete) {
         this.user = user;
+        this.onDelete = onDelete;
     }
 
     render() {
@@ -36,34 +37,16 @@ export default class UserRow {
         userType.appendChild(userTypeSpan);
 
         let userAction = document.createElement('td');
-        let dropdown = document.createElement('div');
-        dropdown.classList.add('dropdown');
+        let deleteBtn = document.createElement('button');
+        deleteBtn.type = 'button';
+        deleteBtn.classList.add('btn', 'btn-sm', 'btn-danger');
+        deleteBtn.innerHTML = '<i class="bx bx-trash"></i>'; 
+        userAction.appendChild(deleteBtn);
 
-        let dropdownButton = document.createElement('button');
-        dropdownButton.type = 'button';
-        dropdownButton.classList.add('btn', 'p-0', 'dropdown-toggle', 'hide-arrow');
-        dropdownButton.setAttribute('data-bs-toggle', 'dropdown');
-        dropdownButton.innerHTML = '<i class="bx bx-dots-vertical-rounded"></i>';
-
-        let dropdownMenu = document.createElement('div');
-        dropdownMenu.classList.add('dropdown-menu');
-
-        let editItem = document.createElement('a');
-        editItem.classList.add('dropdown-item');
-        editItem.href = 'javascript:void(0);';
-        editItem.innerHTML = '<i class="bx bx-edit-alt me-2"></i> Editar';
-
-        let deleteItem = document.createElement('a');
-        deleteItem.classList.add('dropdown-item');
-        deleteItem.href = 'javascript:void(0);';
-        deleteItem.innerHTML = '<i class="bx bx-trash me-2"></i> Eliminar';
-
-        dropdownMenu.appendChild(editItem);
-        dropdownMenu.appendChild(deleteItem);
-
-        dropdown.appendChild(dropdownButton);
-        dropdown.appendChild(dropdownMenu);
-        userAction.appendChild(dropdown);
+        deleteBtn.addEventListener('click', () => {
+            const userType = this.user.role === 'EVALUATOR' ? 'EVALUATOR' : this.user.typeOfEvaluated;
+            this.onDelete(this.user.idNumber, userType);
+        });
 
         row.appendChild(userIdNumber);
         row.appendChild(userName);
