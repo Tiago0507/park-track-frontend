@@ -28,14 +28,16 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         evaluatedList.forEach(evaluated => {
             const row = document.createElement("tr");
-
+            row.onclick = function() { 
+                window.location.href = './evaluated-info.html?idNumber=' + evaluated.idNumber;
+            };
             row.innerHTML = `
                 <td>${evaluated.id}</td>
                 <td>${evaluated.firstName}</td>
                 <td>${evaluated.lastName}</td>
                 <td>${evaluated.email}</td>
             `;
-
+            
             tableBody.appendChild(row);
         });
     } catch (error) {
@@ -43,3 +45,4 @@ document.addEventListener("DOMContentLoaded", async () => {
         alert("Error fetching evaluated list: " + error.message);
     }
 });
+
