@@ -31,6 +31,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
             row.innerHTML = `
                 <td>${evaluated.id}</td>
+                <td>${evaluated.idNumber}</td>
                 <td>${evaluated.firstName}</td>
                 <td>${evaluated.lastName}</td>
                 <td>${evaluated.email}</td>
