@@ -26,10 +26,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
         const evaluated = await response.json();
 
-        document.getElementById('evaluated-id').textContent = evaluated.id;
+        document.getElementById('evaluated-id').textContent = evaluated.idNumber;
         document.getElementById('evaluated-firstName').textContent = evaluated.firstName;
         document.getElementById('evaluated-lastName').textContent = evaluated.lastName;
         document.getElementById('evaluated-email').textContent = evaluated.email;
+        document.getElementById('evaluated-dateOfBirth').textContent = new Date(evaluated.dateOfBirth).toLocaleDateString();
         document.getElementById('evaluated-familyHistoryParkinson').textContent = evaluated.familyHistoryParkinson 
         document.getElementById('evaluated-height').textContent = evaluated.height 
         document.getElementById('evaluated-weight').textContent = evaluated.weight 
@@ -40,7 +41,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         console.error('Error al cargar los detalles del evaluado:', error);
         alert("Error al obtener los detalles del evaluado: " + error.message);
     }
-
     document.querySelector('.back-button').addEventListener('click', goBack);
 });
 

@@ -35,6 +35,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         samplesList.forEach(sample => {
             const row = document.createElement("tr");
+            console.log(sample.id)
+            row.onclick = function() { 
+                window.location.href = './sample-view.html?idNumber=' + evaluatedId + "&sampleId=" + sample.id + "&testTypeId=" + sample.typeOfTestId;
+            };
 
             row.innerHTML = `
                 <td>${sample.id}</td>
@@ -43,7 +47,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 <td>${sample.onOffState}</td>
                 <td>${sample.comments.join(", ")}</td>
             `;
-
+            console.log(sample);
             tableBody.appendChild(row);
         });
     } catch (error) {
