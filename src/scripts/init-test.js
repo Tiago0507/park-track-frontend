@@ -116,36 +116,39 @@ document.addEventListener('DOMContentLoaded', function () {
             }
             return response.json();
           })
-          .then(data => {
-            // Mostrar la información del evaluado
-            document.getElementById('evaluatedId').textContent = data.idNumber;
-            document.getElementById('evaluatedName').textContent = data.firstName;
-            document.getElementById('evaluatedLastName').textContent = data.lastName;
-            document.getElementById('evaluatedBirthDate').textContent = new Date(data.dateOfBirth).toLocaleDateString();
-            document.getElementById('evaluatedEmail').textContent = data.email;
-            document.getElementById('evaluatedType').textContent = data.typeOfEvaluated;
-            document.getElementById('evaluatedSex').textContent = data.sex;
-    
-            // Mostrar el contenedor de información del evaluado
-            document.getElementById('evaluatedInfoDiv').style.display = 'block';
-    
-            if (data.typeOfEvaluated === 'Control') {
-              patientStateDiv.style.display = 'none';
-              aptitudeDiv.style.display = 'none';
-            } else if (data.typeOfEvaluated === 'Paciente') {
-              patientStateDiv.style.display = 'block';
-              aptitudeDiv.style.display = 'block';
+          .then(data => {        
+            document.getElementById('evaluatedId').textContent = data.id_number;
+            document.getElementById('evaluatedName').textContent = data.first_name;
+            document.getElementById('evaluatedLastName').textContent = data.last_name;
+            
+            const birthDate = new Date(data.date_of_birth);
+            if (!isNaN(birthDate)) {
+                document.getElementById('evaluatedBirthDate').textContent = birthDate.toLocaleDateString();
+            } else {
+                document.getElementById('evaluatedBirthDate').textContent = 'Fecha inválida';
             }
-    
-            // Habilitar el botón Iniciar prueba si el paciente existe
+            
+            document.getElementById('evaluatedEmail').textContent = data.email;
+            document.getElementById('evaluatedType').textContent = data.evaluated_type;
+            document.getElementById('evaluatedSex').textContent = data.sex;
+        
+            document.getElementById('evaluatedInfoDiv').style.display = 'block';
+        
+            if (data.evaluated_type === 'Control') {
+                patientStateDiv.style.display = 'none';
+                aptitudeDiv.style.display = 'none';
+            } else if (data.evaluated_type === 'Paciente') {
+                patientStateDiv.style.display = 'block';
+                aptitudeDiv.style.display = 'block';
+            }
+        
             startTestButton.disabled = false;
-          })
+        })
           .catch(error => {
-            alert(error.message); // Mostrar alerta si no se encuentra el paciente
+            alert(error.message);
             patientStateDiv.style.display = 'none';
             aptitudeDiv.style.display = 'none';
-            startTestButton.disabled = true; // Deshabilitar el botón
-            // Ocultar el contenedor de información del evaluado si no se encuentra
+            startTestButton.disabled = true;
             document.getElementById('evaluatedInfoDiv').style.display = 'none';
           });
         } else {
@@ -196,7 +199,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 levodopaTimeDiv.style.display = 'none';
                 patientStateDiv.style.display = 'none';
                 aptitudeDiv.style.display = 'none';
-                startTestButton.disabled = true; // Deshabilitar el botón al reiniciar la prueba
+                startTestButton.disabled = true;
 
                 document.getElementById('evaluatedInfoDiv').style.display = 'none';
                 document.getElementById('testDescriptionDiv').style.display = 'none';
@@ -226,13 +229,11 @@ document.addEventListener('DOMContentLoaded', function () {
         })
         .then(response => response.json())
         .then(data => {
-            // Mostrar la descripción de la prueba
             testDescriptionText.value = data.description;
             testDescriptionDiv.style.display = 'block';
             testTypeMapping.set(selectedTest, data.id);
             currentTestTypeId = data.id;
 
-            // Mostrar los campos adicionales
             patientStateDiv.style.display = 'block';
             aptitudeDiv.style.display = 'block';
         })
@@ -243,12 +244,10 @@ document.addEventListener('DOMContentLoaded', function () {
             console.error('Error al obtener la descripción de la prueba:', error);
         });
         } else {
-        // Si no se selecciona ninguna prueba, ocultar la descripción
         testDescriptionDiv.style.display = 'none';
         testDescriptionText.value = '';
         currentTestTypeId = null;
 
-        // Ocultar los campos adicionales
         patientStateDiv.style.display = 'none';
         aptitudeDiv.style.display = 'none';
         }

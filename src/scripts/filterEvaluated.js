@@ -58,9 +58,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 const samplesCount = samples.length;
 
                 const row = document.createElement("tr");
-                row.onclick = function() { 
-                    window.location.href = './evaluated-info.html?idNumber=' + evaluated.idNumber;
-                };
+                row.style.cursor = 'pointer';
+                
+                row.addEventListener('click', (event) => {
+                    if (!event.target.closest('.samples-link') && !event.target.closest('.add-sample-btn')) {
+                        window.location.href = `evaluated-info.html?idNumber=${evaluated.idNumber}`;
+                    }
+                });
                 
                 row.innerHTML = `
                     <td>${evaluated.id}</td>
@@ -72,6 +76,9 @@ document.addEventListener("DOMContentLoaded", () => {
                         <a href="samples-list.html?id=${evaluated.id}" class="samples-link">
                             ${samplesCount} ${samplesCount === 1 ? 'muestra' : 'muestras'}
                         </a>
+                        <button class="btn btn-sm btn-primary add-sample-btn small-btn" data-idnumber="${evaluated.idNumber}">
+                            <i class="bx bx-plus"></i>
+                        </button>
                     </td>
                 `;
 
@@ -83,6 +90,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 });
                 samplesLink.addEventListener('mouseleave', () => {
                     samplesLink.style.textDecoration = 'none';
+                });
+
+                const addSampleBtn = row.querySelector('.add-sample-btn');
+                addSampleBtn.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    const idNumber = event.currentTarget.getAttribute('data-idnumber');
+                    window.location.href = `./init-test.html?idNumber=${idNumber}`;
                 });
 
                 tableBody.appendChild(row);

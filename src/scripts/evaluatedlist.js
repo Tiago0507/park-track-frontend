@@ -52,6 +52,13 @@ document.addEventListener("DOMContentLoaded", async () => {
             </button>
           </td>
         `;
+
+        row.addEventListener('click', (event) => {
+            if (!event.target.closest('.samples-link') && !event.target.closest('.add-sample-btn')) {
+              window.location.href = `evaluated-info.html?idNumber=${evaluated.idNumber}`;
+            }
+        });
+        
         const samplesLink = row.querySelector('.samples-link');
         samplesLink.style.color = '#696cff';
         samplesLink.style.textDecoration = 'none';
@@ -64,7 +71,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         tableBody.appendChild(row);
       }
   
-      // Añadir evento a los botones de "Añadir Muestra"
       document.querySelectorAll('.add-sample-btn').forEach(button => {
         button.addEventListener('click', (event) => {
           const idNumber = event.currentTarget.getAttribute('data-idnumber');
