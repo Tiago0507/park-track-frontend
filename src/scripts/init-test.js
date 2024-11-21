@@ -85,6 +85,14 @@ document.addEventListener('DOMContentLoaded', function () {
         searchPatient(idNumber);
     }
 
+    const stateOnRadio = document.getElementById('stateOn');
+    stateOnRadio.addEventListener('change', function () {
+    if (this.checked) {
+        levodopaTimeDiv.style.display = 'none';
+        levodopaTimeInput.required = false;
+    }
+    });
+
     stateOffRadio.addEventListener('change', function () {
         levodopaTimeDiv.style.display = this.checked ? 'block' : 'none';
         levodopaTimeInput.required = this.checked;
@@ -259,7 +267,8 @@ document.addEventListener('DOMContentLoaded', function () {
         // // mqttCheckMessage.destinationName = "test/icesi/dlp/check";
         // mqttCheckMessage.destinationName = "test/icesi/dlp";
         // client.send(mqttCheckMessage);
-        const evaluatedId = document.getElementById('evaluatedId').textContent;
+        const evaluatedId = document.getElementById('evaluatedId').textContent || 
+                    document.getElementById('patientId').value;
         const testTypeId = testTypeSelect.value;
         const patientState = document.querySelector('input[name="patientState"]:checked');
         const aptitudeValue = document.getElementById('aptitude').value;
@@ -290,6 +299,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // // Suscribirse al tópico para esperar la respuesta
         // client.subscribe("test/icesi/dlp/check_response");
+
+        console.log('Evaluated ID:', evaluatedId);
+        console.log('Test Type:', testTypeId);
+        console.log('Patient State:', patientState);
+        console.log('Aptitude:', aptitudeValue);
     });
 
 
