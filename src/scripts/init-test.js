@@ -72,6 +72,19 @@ document.addEventListener('DOMContentLoaded', function () {
     let currentTestTypeId = null;
     let testTypeMapping = new Map();
 
+    const token = localStorage.getItem("token");
+    if (!token) {
+        alert("No se encontró el token de autorización. Por favor, inicia sesión.");
+        return;
+    }
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const idNumber = urlParams.get('idNumber');
+    if (idNumber) {
+        document.getElementById('patientId').value = idNumber;
+        searchPatient(idNumber);
+    }
+
     stateOffRadio.addEventListener('change', function () {
         levodopaTimeDiv.style.display = this.checked ? 'block' : 'none';
         levodopaTimeInput.required = this.checked;
@@ -79,50 +92,58 @@ document.addEventListener('DOMContentLoaded', function () {
 
     searchPatientBtn.addEventListener('click', function () {
         const patientId = document.getElementById('patientId').value;
+        searchPatient(patientId);
+      });
+    
+      function searchPatient(patientId) {
         if (patientId) {
-            fetch(`http://localhost:8080/api/patient/${patientId}`)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Paciente no encontrado');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    // Mostrar la información del evaluado
-                    document.getElementById('evaluatedId').textContent = data.idNumber;
-                    document.getElementById('evaluatedName').textContent = data.firstName;
-                    document.getElementById('evaluatedLastName').textContent = data.lastName;
-                    document.getElementById('evaluatedBirthDate').textContent = new Date(data.dateOfBirth).toLocaleDateString();
-                    document.getElementById('evaluatedEmail').textContent = data.email;
-                    document.getElementById('evaluatedType').textContent = data.typeOfEvaluated;
-                    document.getElementById('evaluatedSex').textContent = data.sex;
-
-                    // Mostrar el contenedor de información del evaluado
-                    document.getElementById('evaluatedInfoDiv').style.display = 'block';
-
-                    if (data.typeOfEvaluated === 'Control') {
-                        patientStateDiv.style.display = 'none';
-                        aptitudeDiv.style.display = 'none';
-                    } else if (data.typeOfEvaluated === 'Paciente') {
-                        patientStateDiv.style.display = 'block';
-                        aptitudeDiv.style.display = 'block';
-                    }
-
-                    // Habilitar el botón Iniciar prueba si el paciente existe
-                    startTestButton.disabled = false;
-                })
-                .catch(error => {
-                    alert(error.message); // Mostrar alerta si no se encuentra el paciente
-                    patientStateDiv.style.display = 'none';
-                    aptitudeDiv.style.display = 'none';
-                    startTestButton.disabled = true; // Deshabilitar el botón
-                    // Ocultar el contenedor de información del evaluado si no se encuentra
-                    document.getElementById('evaluatedInfoDiv').style.display = 'none';
-                });
+          fetch(`http://localhost:8080/api/patient/${patientId}`, {
+            headers: {
+              "Authorization": `Bearer ${token}`
+            }
+          })
+          .then(response => {
+            if (!response.ok) {
+              throw new Error('Paciente no encontrado');
+            }
+            return response.json();
+          })
+          .then(data => {
+            // Mostrar la información del evaluado
+            document.getElementById('evaluatedId').textContent = data.idNumber;
+            document.getElementById('evaluatedName').textContent = data.firstName;
+            document.getElementById('evaluatedLastName').textContent = data.lastName;
+            document.getElementById('evaluatedBirthDate').textContent = new Date(data.dateOfBirth).toLocaleDateString();
+            document.getElementById('evaluatedEmail').textContent = data.email;
+            document.getElementById('evaluatedType').textContent = data.typeOfEvaluated;
+            document.getElementById('evaluatedSex').textContent = data.sex;
+    
+            // Mostrar el contenedor de información del evaluado
+            document.getElementById('evaluatedInfoDiv').style.display = 'block';
+    
+            if (data.typeOfEvaluated === 'Control') {
+              patientStateDiv.style.display = 'none';
+              aptitudeDiv.style.display = 'none';
+            } else if (data.typeOfEvaluated === 'Paciente') {
+              patientStateDiv.style.display = 'block';
+              aptitudeDiv.style.display = 'block';
+            }
+    
+            // Habilitar el botón Iniciar prueba si el paciente existe
+            startTestButton.disabled = false;
+          })
+          .catch(error => {
+            alert(error.message); // Mostrar alerta si no se encuentra el paciente
+            patientStateDiv.style.display = 'none';
+            aptitudeDiv.style.display = 'none';
+            startTestButton.disabled = true; // Deshabilitar el botón
+            // Ocultar el contenedor de información del evaluado si no se encuentra
+            document.getElementById('evaluatedInfoDiv').style.display = 'none';
+          });
         } else {
-            alert('Por favor, ingrese el ID del evaluado');
+          alert('Por favor, ingrese el ID del evaluado');
         }
-    });
+      }
 
     form.addEventListener('submit', function (e) {
         e.preventDefault();
@@ -143,7 +164,10 @@ document.addEventListener('DOMContentLoaded', function () {
                     const response = await fetch(
                         `http://localhost:8080/api/samples?evaluatedIdNumber=${evaluatedId}&id=${currentSampleId}&testTypeId=${currentTestTypeId}`,
                         {
-                            method: 'DELETE'
+                            method: 'DELETE',
+                            headers: {
+                                "Authorization": `Bearer ${token}`
+                            }
                         }
                     );
 
@@ -187,26 +211,38 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Si se selecciona una prueba, hacer una petición al backend
         if (selectedTest) {
-            fetch(`http://localhost:8080/api/getTestDescription?testType=${selectedTest}`)
-                .then(response => response.json())
-                .then(data => {
-                    // Mostrar la descripción de la prueba
-                    testDescriptionText.value = data.description;
-                    testDescriptionDiv.style.display = 'block';
-                    testTypeMapping.set(selectedTest, data.id);
-                    currentTestTypeId = data.id;
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    testDescriptionDiv.style.display = 'none';
-                    testDescriptionText.value = '';
-                    console.error('Error al obtener la descripción de la prueba:', error);
-                });
-        } else {
-            // Si no se selecciona ninguna prueba, ocultar la descripción
+        fetch(`http://localhost:8080/api/getTestDescription?testType=${selectedTest}`, {
+            headers: {
+            "Authorization": `Bearer ${token}`
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Mostrar la descripción de la prueba
+            testDescriptionText.value = data.description;
+            testDescriptionDiv.style.display = 'block';
+            testTypeMapping.set(selectedTest, data.id);
+            currentTestTypeId = data.id;
+
+            // Mostrar los campos adicionales
+            patientStateDiv.style.display = 'block';
+            aptitudeDiv.style.display = 'block';
+        })
+        .catch(error => {
+            console.error('Error:', error);
             testDescriptionDiv.style.display = 'none';
             testDescriptionText.value = '';
-            currentTestTypeId = null;
+            console.error('Error al obtener la descripción de la prueba:', error);
+        });
+        } else {
+        // Si no se selecciona ninguna prueba, ocultar la descripción
+        testDescriptionDiv.style.display = 'none';
+        testDescriptionText.value = '';
+        currentTestTypeId = null;
+
+        // Ocultar los campos adicionales
+        patientStateDiv.style.display = 'none';
+        aptitudeDiv.style.display = 'none';
         }
     });
 
