@@ -31,13 +31,16 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
 
         const samplesList = await response.json();
+        console.log(samplesList.comments)
         const tableBody = document.querySelector("#samples-list");
 
         samplesList.forEach(sample => {
             const row = document.createElement("tr");
             console.log(sample.id)
+            console.log(sample)
+            console.log(sample.comments)
             row.onclick = function() { 
-                window.location.href = './sample-view.html?idNumber=' + evaluatedId + "&sampleId=" + sample.id + "&testTypeId=" + sample.typeOfTestId;
+                window.location.href = './sample-view.html?idNumber=' + evaluatedId + "&sampleId=" + sample.id + "&testTypeId=" + sample.typeOfTestId + "&sampleComment=" + sample.comments;
             };
 
             row.innerHTML = `

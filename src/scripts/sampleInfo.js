@@ -6,6 +6,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const evaluatedId = urlParams.get('idNumber');
     const sampleID = urlParams.get('sampleId');
     const testTypeId = urlParams.get('testTypeId');
+    const comments = urlParams.get('sampleComment');
 
     if (!token) {
         alert("No se encontró el token de autorización. Por favor, inicia sesión.");
@@ -27,8 +28,19 @@ document.addEventListener("DOMContentLoaded", async () => {
         return;
     }
 
+    if (!comments) {
+        alert("No se encontró el comentario, por favor reintentar.");
+        return;
+    }
+
     console.log("ID del evaluado:", evaluatedId);
     console.log("ID del tipo de test:", testTypeId);
+
+    // Asignar el onclick del botón con el href dinámico
+    const backButton = document.getElementById("backButton");
+    backButton.onclick = () => {
+        window.location.href = `./samples-list.html?id=${evaluatedId}`;
+    };
 
     try {
         const response = await fetch(`http://localhost:8080/hardware_controller/sample?sampleID=${sampleID}&evaluatedId=${evaluatedId}&testTypeId=${testTypeId}`, {
@@ -38,7 +50,14 @@ document.addEventListener("DOMContentLoaded", async () => {
                 "Authorization": `Bearer ${token}`
             }
         });
-        console.log(response);
+
+        const responseSample = await fetch(`http://localhost:8080/sample/samples/${evaluatedId}`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            }
+        });
 
         if (!response.ok) {
             if (response.status === 500) {
@@ -49,41 +68,48 @@ document.addEventListener("DOMContentLoaded", async () => {
             }
             throw new Error('Error en la respuesta del servidor.');
         }
-        typeTestString = "";
-        typeAptitudeString = "";
+
+        if (!responseSample.ok) {
+            if (response.status === 500) {
+                console.error('Error 500: La muestra no existe.');
+                alert('La muestra no existe.');
+            } else {
+                alert('Error al obtener los datos del servidor.');
+            }
+            throw new Error('Error en la respuesta del servidor.');
+        }
+
+        let typeTestString = "";
+        let typeAptitudeString = "";
+
         const data = await response.json();
+        const sampleData = await responseSample.json();
 
-        if(testTypeId == 1 ){
-            typeTestString = "Foot tapping."
-        }else{
-            typeTestString = "Heel tapping."
+        if (testTypeId == 1) {
+            typeTestString = "Foot tapping.";
+        } else {
+            typeTestString = "Heel tapping.";
         }
 
-        if(typeAptitudeString == "A" ){
-            typeAptitudeString = "Suitable."
-        }else{
-            typeAptitudeString = "Not suitable."
+        if (typeAptitudeString === "A") {
+            typeAptitudeString = "Suitable.";
+        } else {
+            typeAptitudeString = "Not suitable.";
         }
+
+        console.log(data);
+        console.log(sampleData);
+
         document.getElementById("sampleId").textContent = data.id || "N/A";
         document.getElementById("sampleTypeOfTestId").textContent = typeTestString || "N/A";
         document.getElementById("sampleDate").textContent = new Date(data.date).toLocaleString() || "N/A";
         document.getElementById("sampleOnOffState").textContent = data.onOffState || "N/A";
         document.getElementById("sampleAptitude").textContent = typeAptitudeString || "N/A";
 
-        const commentsContainer = document.getElementById("sampleComments");
-        if (Array.isArray(data.comments) && data.comments.length > 0) {
-            commentsContainer.innerHTML = ""; // Limpiamos contenido previo
-            data.comments.forEach(comment => {
-                const li = document.createElement("li");
-                li.textContent = comment;
-                commentsContainer.appendChild(li);
-            });
-        } else {
-            commentsContainer.textContent = "Sin comentarios.";
-        }
-        console.log(data);
+        const commentsArray = comments.split(','); 
+        const commentsHtml = commentsArray.map(comment => `<div>${comment.trim()}</div>`).join('');
+        document.getElementById("sampleComments").innerHTML = commentsHtml;
 
-        // Procesamos los datos de sensores, manejando valores nulos
         const sensor1Data = data.rawData?.sensors?.sensor1
             ? processSensorData(data.rawData.sensors.sensor1)
             : getEmptySensorData();
@@ -94,11 +120,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         console.log(sensor1Data);
         console.log(sensor2Data);
 
-        // Limpiamos los gráficos existentes antes de graficar
         resetChart('sensor1Chart', sensor1ChartInstance);
         resetChart('sensor2Chart', sensor2ChartInstance);
 
-        // Graficamos los datos para cada sensor
         sensor1ChartInstance = createChart('sensor1Chart', sensor1Data, 'Sensor 1');
         sensor2ChartInstance = createChart('sensor2Chart', sensor2Data, 'Sensor 2');
 

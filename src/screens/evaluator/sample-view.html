@@ -32,22 +32,11 @@
 <body>
     <div class="container mt-5">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2>Sample</h2>
-            <a href="../index.html">
-                <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 48 48">
-                    <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                        stroke-width="4">
-                        <path d="m13 8l-7 6l7 7" />
-                        <path
-                            d="M6 14h22.994c6.883 0 12.728 5.62 12.996 12.5c.284 7.27-5.723 13.5-12.996 13.5H11.998" />
-                    </g>
-                </svg>
-            </a>
+            <h2>Sample details</h2>
         </div>
         
         <div class="card mb-4">
             <div class="card-body">
-                <h3>Detalles del Sample</h3>
                 <p><strong>ID:</strong> <span id="sampleId"></span></p>
                 <p><strong>Tipo de Prueba:</strong> <span id="sampleTypeOfTestId"></span></p>
                 <p><strong>Fecha:</strong> <span id="sampleDate"></span></p>
@@ -73,6 +62,13 @@
                 <button type="button" class="btn btn-danger" id="discardButton">Eliminar prueba</button>
             </div>
         </div>
+        <div class="d-flex justify-content-end mt-4">
+            <button id="backButton" class="btn btn-primary d-flex align-items-center">
+                <i class="bx bx-arrow-back me-1"></i>
+                Volver a Lista de muestras
+            </button>
+        </div>
+            
     </div>
     <footer class="content-footer footer bg-footer-theme">
         <div class="container-xxl d-flex flex-wrap justify-content-center py-2">
@@ -84,6 +80,7 @@
                 Todos los derechos reservados
             </div>
         </div>
+
     </footer>
     <script src="../../../assets/vendor/libs/jquery/jquery.js"></script>
     <script src="../../../assets/vendor/libs/popper/popper.js"></script>
