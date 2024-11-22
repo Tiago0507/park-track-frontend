@@ -117,11 +117,11 @@ document.addEventListener('DOMContentLoaded', function () {
                     return response.json();
                 })
                 .then(data => {
-                    document.getElementById('evaluatedId').textContent = data.id_number;
-                    document.getElementById('evaluatedName').textContent = data.first_name;
-                    document.getElementById('evaluatedLastName').textContent = data.last_name;
+                    document.getElementById('evaluatedId').textContent = data.idNumber;
+                    document.getElementById('evaluatedName').textContent = data.firstName;
+                    document.getElementById('evaluatedLastName').textContent = data.lastName;
 
-                    const birthDate = new Date(data.date_of_birth);
+                    const birthDate = new Date(data.dateOfBirth);
                     if (!isNaN(birthDate)) {
                         document.getElementById('evaluatedBirthDate').textContent = birthDate.toLocaleDateString();
                     } else {
@@ -129,7 +129,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
 
                     document.getElementById('evaluatedEmail').textContent = data.email;
-                    document.getElementById('evaluatedType').textContent = data.evaluated_type;
+                    document.getElementById('evaluatedType').textContent = data.typeOfEvaluated;
                     document.getElementById('evaluatedSex').textContent = data.sex;
 
                     document.getElementById('evaluatedInfoDiv').style.display = 'block';
