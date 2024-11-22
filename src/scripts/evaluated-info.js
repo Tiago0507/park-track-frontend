@@ -59,7 +59,7 @@ function updateEvaluatedDetailsDOM(evaluated) {
     document.getElementById('evaluated-firstName').textContent = evaluated.firstName || 'N/A';
     document.getElementById('evaluated-lastName').textContent = evaluated.lastName || 'N/A';
     document.getElementById('evaluated-email').textContent = evaluated.email || 'N/A';
-    document.getElementById('evaluated-dateOfBirth').textContent = 
+    document.getElementById('evaluated-dateOfBirth').textContent =
         evaluated.dateOfBirth ? new Date(evaluated.dateOfBirth).toLocaleDateString() : 'N/A';
     document.getElementById('evaluated-familyHistoryParkinson').textContent = evaluated.familyHistoryParkinson;
     document.getElementById('evaluated-height').textContent = evaluated.height || 'N/A';

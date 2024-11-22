@@ -39,7 +39,8 @@ function submitForm() {
     fetch(`http://127.0.0.1:8080/${userType == "evaluator" ? "evaluators" : "evaluated"}/add`, {
         method: "POST",
         headers: {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + localStorage.getItem("token"),
         },
         body: JSON.stringify(userData)
     })

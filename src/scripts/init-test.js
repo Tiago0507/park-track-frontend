@@ -87,74 +87,74 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const stateOnRadio = document.getElementById('stateOn');
     stateOnRadio.addEventListener('change', function () {
-    if (this.checked) {
-        levodopaTimeDiv.style.display = 'none';
-        levodopaTimeInput.required = false;
-    }
+        if (this.checked) {
+            levodopaTimeDiv.style.display = 'none';
+            levodopaTimeInput.required = false;
+        }
     });
 
-    stateOffRadio.addEventListener('change', function () {
-        levodopaTimeDiv.style.display = this.checked ? 'block' : 'none';
-        levodopaTimeInput.required = this.checked;
-    });
+    // stateOffRadio.addEventListener('change', function () {
+    //     levodopaTimeDiv.style.display = this.checked ? 'block' : 'none';
+    //     levodopaTimeInput.required = this.checked;
+    // });
 
     searchPatientBtn.addEventListener('click', function () {
         const patientId = document.getElementById('patientId').value;
         searchPatient(patientId);
-      });
-    
-      function searchPatient(patientId) {
+    });
+
+    function searchPatient(patientId) {
         if (patientId) {
-          fetch(`http://localhost:8080/api/patient/${patientId}`, {
-            headers: {
-              "Authorization": `Bearer ${token}`
-            }
-          })
-          .then(response => {
-            if (!response.ok) {
-              throw new Error('Paciente no encontrado');
-            }
-            return response.json();
-          })
-          .then(data => {        
-            document.getElementById('evaluatedId').textContent = data.id_number;
-            document.getElementById('evaluatedName').textContent = data.first_name;
-            document.getElementById('evaluatedLastName').textContent = data.last_name;
-            
-            const birthDate = new Date(data.date_of_birth);
-            if (!isNaN(birthDate)) {
-                document.getElementById('evaluatedBirthDate').textContent = birthDate.toLocaleDateString();
-            } else {
-                document.getElementById('evaluatedBirthDate').textContent = 'Fecha inválida';
-            }
-            
-            document.getElementById('evaluatedEmail').textContent = data.email;
-            document.getElementById('evaluatedType').textContent = data.evaluated_type;
-            document.getElementById('evaluatedSex').textContent = data.sex;
-        
-            document.getElementById('evaluatedInfoDiv').style.display = 'block';
-        
-            if (data.evaluated_type === 'Control') {
-                patientStateDiv.style.display = 'none';
-                aptitudeDiv.style.display = 'none';
-            } else if (data.evaluated_type === 'Paciente') {
-                patientStateDiv.style.display = 'block';
-                aptitudeDiv.style.display = 'block';
-            }
-        
-            startTestButton.disabled = false;
-        })
-          .catch(error => {
-            alert(error.message);
-            patientStateDiv.style.display = 'none';
-            aptitudeDiv.style.display = 'none';
-            startTestButton.disabled = true;
-            document.getElementById('evaluatedInfoDiv').style.display = 'none';
-          });
+            fetch(`http://localhost:8080/evaluated/details/${patientId}`, {
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                }
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Paciente no encontrado');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    document.getElementById('evaluatedId').textContent = data.id_number;
+                    document.getElementById('evaluatedName').textContent = data.first_name;
+                    document.getElementById('evaluatedLastName').textContent = data.last_name;
+
+                    const birthDate = new Date(data.date_of_birth);
+                    if (!isNaN(birthDate)) {
+                        document.getElementById('evaluatedBirthDate').textContent = birthDate.toLocaleDateString();
+                    } else {
+                        document.getElementById('evaluatedBirthDate').textContent = 'Fecha inválida';
+                    }
+
+                    document.getElementById('evaluatedEmail').textContent = data.email;
+                    document.getElementById('evaluatedType').textContent = data.evaluated_type;
+                    document.getElementById('evaluatedSex').textContent = data.sex;
+
+                    document.getElementById('evaluatedInfoDiv').style.display = 'block';
+
+                    if (data.evaluated_type === 'Control') {
+                        patientStateDiv.style.display = 'none';
+                        aptitudeDiv.style.display = 'none';
+                    } else if (data.evaluated_type === 'Paciente') {
+                        patientStateDiv.style.display = 'block';
+                        aptitudeDiv.style.display = 'block';
+                    }
+
+                    startTestButton.disabled = false;
+                })
+                .catch(error => {
+                    alert(error.message);
+                    patientStateDiv.style.display = 'none';
+                    aptitudeDiv.style.display = 'none';
+                    startTestButton.disabled = true;
+                    document.getElementById('evaluatedInfoDiv').style.display = 'none';
+                });
         } else {
-          alert('Por favor, ingrese el ID del evaluado');
+            alert('Por favor, ingrese el ID del evaluado');
         }
-      }
+    }
 
     form.addEventListener('submit', function (e) {
         e.preventDefault();
@@ -222,34 +222,34 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Si se selecciona una prueba, hacer una petición al backend
         if (selectedTest) {
-        fetch(`http://localhost:8080/api/getTestDescription?testType=${selectedTest}`, {
-            headers: {
-            "Authorization": `Bearer ${token}`
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            testDescriptionText.value = data.description;
-            testDescriptionDiv.style.display = 'block';
-            testTypeMapping.set(selectedTest, data.id);
-            currentTestTypeId = data.id;
+            fetch(`http://localhost:8080/api/getTestDescription?testType=${selectedTest}`, {
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    testDescriptionText.value = data.description;
+                    testDescriptionDiv.style.display = 'block';
+                    testTypeMapping.set(selectedTest, data.id);
+                    currentTestTypeId = data.id;
 
-            patientStateDiv.style.display = 'block';
-            aptitudeDiv.style.display = 'block';
-        })
-        .catch(error => {
-            console.error('Error:', error);
+                    patientStateDiv.style.display = 'block';
+                    aptitudeDiv.style.display = 'block';
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    testDescriptionDiv.style.display = 'none';
+                    testDescriptionText.value = '';
+                    console.error('Error al obtener la descripción de la prueba:', error);
+                });
+        } else {
             testDescriptionDiv.style.display = 'none';
             testDescriptionText.value = '';
-            console.error('Error al obtener la descripción de la prueba:', error);
-        });
-        } else {
-        testDescriptionDiv.style.display = 'none';
-        testDescriptionText.value = '';
-        currentTestTypeId = null;
+            currentTestTypeId = null;
 
-        patientStateDiv.style.display = 'none';
-        aptitudeDiv.style.display = 'none';
+            patientStateDiv.style.display = 'none';
+            aptitudeDiv.style.display = 'none';
         }
     });
 
@@ -266,8 +266,8 @@ document.addEventListener('DOMContentLoaded', function () {
         // // mqttCheckMessage.destinationName = "test/icesi/dlp/check";
         // mqttCheckMessage.destinationName = "test/icesi/dlp";
         // client.send(mqttCheckMessage);
-        const evaluatedId = document.getElementById('evaluatedId').textContent || 
-                    document.getElementById('patientId').value;
+        const evaluatedId = document.getElementById('evaluatedId').textContent ||
+            document.getElementById('patientId').value;
         const testTypeId = testTypeSelect.value;
         const patientState = document.querySelector('input[name="patientState"]:checked');
         const aptitudeValue = document.getElementById('aptitude').value;
