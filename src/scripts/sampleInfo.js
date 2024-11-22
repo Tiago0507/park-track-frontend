@@ -4,10 +4,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     const token = localStorage.getItem("token");
     const urlParams = new URLSearchParams(window.location.search);
     const evaluatedId = urlParams.get('idNumber');
-    const sampleID =urlParams.get('sampleId');
+    const sampleID = urlParams.get('sampleId');
     const testTypeId = urlParams.get('testTypeId');
 
-      if (!token) {
+    if (!token) {
         alert("No se encontró el token de autorización. Por favor, inicia sesión.");
         return;
     }
@@ -27,7 +27,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         return;
     }
 
-    
     console.log("ID del evaluado:", evaluatedId);
     console.log("ID del tipo de test:", testTypeId);
 
@@ -40,6 +39,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             }
         });
         console.log(response);
+
         if (!response.ok) {
             if (response.status === 500) {
                 console.error('Error 500: La muestra no existe.');
@@ -49,20 +49,30 @@ document.addEventListener("DOMContentLoaded", async () => {
             }
             throw new Error('Error en la respuesta del servidor.');
         }
-
-        
-
+        typeTestString = "";
+        typeAptitudeString = "";
         const data = await response.json();
+
+        if(testTypeId == 1 ){
+            typeTestString = "Foot tapping."
+        }else{
+            typeTestString = "Heel tapping."
+        }
+
+        if(typeAptitudeString == "A" ){
+            typeAptitudeString = "Suitable."
+        }else{
+            typeAptitudeString = "Not suitable."
+        }
         document.getElementById("sampleId").textContent = data.id || "N/A";
-        document.getElementById("sampleTypeOfTestId").textContent = testTypeId || "N/A";
+        document.getElementById("sampleTypeOfTestId").textContent = typeTestString || "N/A";
         document.getElementById("sampleDate").textContent = new Date(data.date).toLocaleString() || "N/A";
-        document.getElementById("sampleDescription").textContent = data.description || "N/A";
         document.getElementById("sampleOnOffState").textContent = data.onOffState || "N/A";
-        document.getElementById("sampleAptitude").textContent = data.aptitudeForTheTest || "N/A";
-        document.getElementById("sampleComments").textContent = data.comments.join(", ") || "N/A";
+        document.getElementById("sampleAptitude").textContent = typeAptitudeString || "N/A";
 
         const commentsContainer = document.getElementById("sampleComments");
         if (Array.isArray(data.comments) && data.comments.length > 0) {
+            commentsContainer.innerHTML = ""; // Limpiamos contenido previo
             data.comments.forEach(comment => {
                 const li = document.createElement("li");
                 li.textContent = comment;
@@ -73,20 +83,25 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
         console.log(data);
 
-        // Procesamos los datos obtenidos de los sensores
-        const sensor1Data = processSensorData(data.rawData.sensors.sensor1.sample1);
-        const sensor2Data = processSensorData(data.rawData.sensors.sensor1.sample2);
-    
+        // Procesamos los datos de sensores, manejando valores nulos
+        const sensor1Data = data.rawData?.sensors?.sensor1
+            ? processSensorData(data.rawData.sensors.sensor1)
+            : getEmptySensorData();
+        const sensor2Data = data.rawData?.sensors?.sensor2
+            ? processSensorData(data.rawData.sensors.sensor2)
+            : getEmptySensorData();
+
+        console.log(sensor1Data);
+        console.log(sensor2Data);
+
         // Limpiamos los gráficos existentes antes de graficar
         resetChart('sensor1Chart', sensor1ChartInstance);
         resetChart('sensor2Chart', sensor2ChartInstance);
-    
+
         // Graficamos los datos para cada sensor
         sensor1ChartInstance = createChart('sensor1Chart', sensor1Data, 'Sensor 1');
         sensor2ChartInstance = createChart('sensor2Chart', sensor2Data, 'Sensor 2');
-    
 
-        
     } catch (error) {
         console.error("Error:", error);
         alert("Error fetching: " + error.message);
@@ -105,15 +120,29 @@ function processSensorData(sensor) {
 
     // Llenamos los arrays con los valores respectivos
     samples.forEach(sample => {
-        axData.push({ x: sample.timestamp, y: sample.ax });
-        ayData.push({ x: sample.timestamp, y: sample.ay });
-        azData.push({ x: sample.timestamp, y: sample.az });
-        gxData.push({ x: sample.timestamp, y: sample.gx });
-        gyData.push({ x: sample.timestamp, y: sample.gy });
-        gzData.push({ x: sample.timestamp, y: sample.gz });
+        if (sample && typeof sample.timestamp === "number") {
+            axData.push({ x: sample.timestamp, y: sample.ax });
+            ayData.push({ x: sample.timestamp, y: sample.ay });
+            azData.push({ x: sample.timestamp, y: sample.az });
+            gxData.push({ x: sample.timestamp, y: sample.gx });
+            gyData.push({ x: sample.timestamp, y: sample.gy });
+            gzData.push({ x: sample.timestamp, y: sample.gz });
+        }
     });
 
     return { axData, ayData, azData, gxData, gyData, gzData };
+}
+
+// Función para generar datos vacíos
+function getEmptySensorData() {
+    return {
+        axData: [],
+        ayData: [],
+        azData: [],
+        gxData: [],
+        gyData: [],
+        gzData: []
+    };
 }
 
 // Función para limpiar el gráfico antes de crear uno nuevo
