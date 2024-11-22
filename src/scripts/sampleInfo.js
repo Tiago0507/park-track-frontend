@@ -110,6 +110,26 @@ document.addEventListener("DOMContentLoaded", async () => {
         const commentsHtml = commentsArray.map(comment => `<div>${comment.trim()}</div>`).join('');
         document.getElementById("sampleComments").innerHTML = commentsHtml;
 
+        const editBtn = document.getElementById('editBtn');
+        const editSampleDataModal = document.getElementById('editSampleDataModal');
+        const errorSavingChangesModal = new bootstrap.Modal(document.getElementById('saveChangesErrorModal'));
+        const successSavingChangesModal = new bootstrap.Modal(document.getElementById('saveChangesSuccessModal'));
+        const saveChangesBtn = document.getElementById('saveChangesBtn');
+        
+
+        editBtn.addEventListener('click', () => {
+            const modalInstance = bootstrap.Modal.getOrCreateInstance(editSampleDataModal);
+            modalInstance.show();
+        });
+
+        saveChangesBtn.addEventListener("click", async () => {
+            const modalInstance = bootstrap.Modal.getOrCreateInstance(editSampleDataModal);
+            modalInstance.hide();
+    
+            await saveChanges(token, sampleID, successSavingChangesModal, errorSavingChangesModal);
+        });
+
+
         const sensor1Data = data.rawData?.sensors?.sensor1
             ? processSensorData(data.rawData.sensors.sensor1)
             : getEmptySensorData();
@@ -125,12 +145,57 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         sensor1ChartInstance = createChart('sensor1Chart', sensor1Data, 'Sensor 1');
         sensor2ChartInstance = createChart('sensor2Chart', sensor2Data, 'Sensor 2');
+        
 
     } catch (error) {
         console.error("Error:", error);
         alert("Error fetching: " + error.message);
     }
 });
+
+async function saveChanges(token, sampleId, successModal, errorModal) {
+    if (!token) {
+        alert("No se encontró el token de autorización. Por favor, inicia sesión.");
+        return;
+    }
+
+    const sampleOnOffState = document.querySelector('input[name="stateOptions"]:checked').value;
+    const sampleAptitude = document.getElementById("aptitudeText").value;
+    const sampleComments = document.getElementById("commentsTextArea").value;
+
+    const updatedSample = {
+        onOffState: sampleOnOffState,
+        aptitude: sampleAptitude,
+        comments: sampleComments.split("\n") // Convertir en array si es multilinea
+    };
+
+    try {
+        const response = await fetch(`http://localhost:8080/sample/edit/${sampleId}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify(updatedSample)
+        });
+
+        if (!response.ok) {
+            errorModal.show();
+            return;
+        }
+
+        successModal._element.addEventListener('hidden.bs.modal', () => {
+            const modalInstance = bootstrap.Modal.getOrCreateInstance(editSampleDataModal);
+            modalInstance.show();
+        });
+    } catch (error) {
+        console.error("Error al realizar la solicitud:", error);
+        errorSavingChangesModal.show();
+    }
+}
+
+
+
 
 // Función para procesar los datos de un sensor
 function processSensorData(sensor) {

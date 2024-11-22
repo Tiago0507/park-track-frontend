@@ -32,7 +32,7 @@
 <body>
     <div class="container mt-5">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2>Sample details</h2>
+            <h2>Detalles de la muestra</h2>
         </div>
         
         <div class="card mb-4">
@@ -44,10 +44,83 @@
                 <p><strong>Aptitud:</strong> <span id="sampleAptitude"></span></p>
                 <p><strong>Comentarios:</strong></p>
                 <ul id="sampleComments"></ul>
+                <button id="editBtn" class="btn btn-primary d-flex align-items-center ms-auto">
+                    <i class="bx me-1"></i>
+                    Editar
+                </button>
+            </div>
+        </div>
+
+        <div class="modal fade" id="editSampleDataModal" tabindex="-1" aria-labelledby="editSampleDataModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3 class="modal-title text-center w-100" id="editDataSampleTitle">Editar muestra</h3>
+
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label"><strong>Estado:</strong></label>
+                            <div>
+                                <div>
+                                    <input type="radio" id="onOption" name="stateOptions" value="on" checked>
+                                    <label for="onOption">On</label>
+                                </div>
+                                <div>
+                                    <input type="radio" id="offOption" name="stateOptions" value="off">
+                                    <label for="offOption">Off</label>
+                                </div>
+                            </div>
+                        </div>                                          
+                        <div class="mb-3">
+                            <label for="aptitudeText" class="form-label"><strong>Aptitud:</strong></label>
+                            <input type="text" class="form-control" id="aptitudeText" placeholder="Ingrese la aptitud">
+                        </div>
+                        <div class="mb-3">
+                            <label for="commentsTextArea" class="form-label"><strong>Comentarios:</strong></label>
+                            <textarea class="form-control" id="commentsTextArea" rows="3" placeholder="Ingrese los comentarios"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-primary" id="saveChangesBtn">Guardar cambios</button>
+                    </div>
+                </div>
             </div>
         </div>
         
-    
+        <div class="modal fade" id="saveChangesSuccessModal" tabindex="-1" aria-labelledby="saveChangesSuccessModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="saveChangesSuccessModalLabel">Cambios guardados</h5>
+                    </div>
+                    <div class="modal-body">
+                        Los cambios han sido guardados correctamente.
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal" id="closeSuccessBtn">Cerrar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="saveChangesErrorModal" tabindex="-1" aria-labelledby="saveChangesErrorModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="saveChangesErrorModalLabel">Error al guardar cambios</h5>
+                    </div>
+                    <div class="modal-body">
+                        Hubo un error al intentar guardar los cambios. Por favor, intente nuevamente.
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal" id="closeFailBtn">Cerrar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="mt-4">
             <div class="card">
                 <div class="card-body" id="resultSpace">
