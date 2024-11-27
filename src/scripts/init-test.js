@@ -1,5 +1,5 @@
 const okbtn = document.getElementById('okbtn');
-client = new Paho.MQTT.Client('broker.hivemq.com', Number(8000), "ESP32ClienteMicasaA00395902");
+client = new Paho.MQTT.Client('broker.hivemq.com', Number(8884), "ESP32ClienteMicasaA00395902");
 
 //Listener de mensajes
 // client.onMessageArrived = function (msg) {
@@ -39,9 +39,6 @@ client.connect({
 
 var testInProgress = false;
 
-
-
-
 document.addEventListener('DOMContentLoaded', function () {
     const form = document.getElementById('evaluationForm');
     const stateOffRadio = document.getElementById('stateOff');
@@ -56,6 +53,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const patientStateDiv = document.getElementById('patientStateDiv');
     const aptitudeDiv = document.getElementById('aptitudeDiv');
     const startTestButton = document.getElementById('iniciarPrueba');
+    const notes = document.getElementById('notes');
     // const stopTestButton = document.getElementById('stopTest')
     // const stopTestModal = new bootstrap.Modal(document.getElementById('stopTestModal'));
 
@@ -67,6 +65,33 @@ document.addEventListener('DOMContentLoaded', function () {
     //     stopTestButton.disabled = !testInProgress; 
     // }
 
+    const okbtn = document.getElementById('okbtn');
+    client = new Paho.MQTT.Client('broker.hivemq.com', Number(8884), "A003781213Unicosuperunico");
+
+    try {
+        const reconnectOptions = {
+            onSuccess: function () {
+                console.log("Conectado al servidor MQTT!")
+                client.subscribe("test/icesi/dlp");
+            },
+            onFailure: function (message) {
+                console.error("Connection failed: ", message.errorMessage);
+            },
+            keepAliveInterval: 30,
+            cleanSession: true
+        };
+
+        client.connect(reconnectOptions);
+    } catch(e) {
+        console.error("Error al conectarse al MQTT", e);
+    }
+
+    client.onConnectionLost = function(responseObject) {
+        if (responseObject.errorCode !== 0) {
+            console.error("Connection lost:", responseObject.errorMessage);
+            client.connect(reconnectOptions);  // Now this will work
+        }
+    };
 
     let currentSampleId = null;
     let currentTestTypeId = null;
@@ -271,6 +296,9 @@ document.addEventListener('DOMContentLoaded', function () {
         const testTypeId = testTypeSelect.value;
         const patientState = document.querySelector('input[name="patientState"]:checked');
         const aptitudeValue = document.getElementById('aptitude').value;
+        localStorage.setItem("notas",notes.value)
+
+        console.log("notas guardadas: " ,localStorage.getItem("notas"))
 
         // Verificar que todos los campos necesarios no estén vacíos
         if (evaluatedId && testTypeId && patientState && aptitudeValue) {

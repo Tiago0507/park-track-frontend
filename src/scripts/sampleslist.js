@@ -48,7 +48,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                 <td>${new Date(sample.date).toLocaleDateString()}</td>
                 <td>${sample.description}</td>
                 <td>${sample.onOffState}</td>
-                <td>${sample.comments.join(", ")}</td>
             `;
             console.log(sample);
             tableBody.appendChild(row);

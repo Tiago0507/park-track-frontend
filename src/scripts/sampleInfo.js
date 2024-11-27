@@ -7,6 +7,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     const sampleID = urlParams.get('sampleId');
     const testTypeId = urlParams.get('testTypeId');
     const comments = urlParams.get('sampleComment');
+    const commentsParagraph = document.getElementById("commentsIdSection")
+
+    commentsParagraph.innerText = localStorage.getItem("notas")
+    console.log("notas: ",localStorage.getItem("notas"))
 
     if (!token) {
         alert("No se encontró el token de autorización. Por favor, inicia sesión.");
@@ -25,11 +29,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     if (!testTypeId) {
         alert("No se encontró el ID del test, por favor reintentar.");
-        return;
-    }
-
-    if (!comments) {
-        alert("No se encontró el comentario, por favor reintentar.");
         return;
     }
 
