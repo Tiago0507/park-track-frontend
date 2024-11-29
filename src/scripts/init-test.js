@@ -1,116 +1,37 @@
-const okbtn = document.getElementById('okbtn');
-client = new Paho.MQTT.Client('broker.hivemq.com', Number(8884), "ESP32ClienteMicasaA00395902");
-
-//Listener de mensajes
-// client.onMessageArrived = function (msg) {
-//     console.log("Arrived!: " + msg.payloadString);
-// }
-
-//Función para conectarse al broker
-client.connect({
-    onSuccess: function () {
-        console.log("Conectado al servidor MQTT!")
-        client.subscribe("test/icesi/dlp");
-    }
-});
-
-
-// Manejar la respuesta de la ESP32
-// client.onMessageArrived = (message) => {
-//     console.log("Arrived!: " + message.payloadString);
-//     const response = JSON.parse(message.payloadString);
-
-//     if (response.status === "ok") {
-//         // Si no hay errores, habilitar el botón e iniciar la prueba
-//         console.log('No hay errores, iniciando prueba...');
-
-//     } else {
-//         // Si hay un error, mostrar alerta y desactivar el botón por 5 segundos
-//         console.log('Error en la conexión: ' + response.message);
-//         alert(`Error: ${response.message}`);
-
-//         setTimeout(() => {
-//             startTestButton.disabled = false; // Habilitar el botón después de 5 segundos
-//             stopTestButton.disabled = true;
-//         }, 5000); // Bloquear el botón por 5 segundos
-//     }
-// };
-
-
-var testInProgress = false;
+// DOM Elements
+const form = document.getElementById('evaluationForm');
+const testTypeSelect = document.getElementById('testType');
+const testDescriptionDiv = document.getElementById('testDescriptionDiv');
+const testDescriptionText = document.getElementById('testDescription');
+const startTestButton = document.getElementById('iniciarPrueba');
+const restartTest = document.getElementById('restartTest');
+const notes = document.getElementById('notes');
+const stateOnRadio = document.getElementById('stateOn');
+const stateOffRadio = document.getElementById('stateOff');
+const levodopaTimeDiv = document.getElementById('levodopaTimeDiv');
+const levodopaTimeInput = document.getElementById('levodopaTime');
 
 document.addEventListener('DOMContentLoaded', function () {
-    const form = document.getElementById('evaluationForm');
-    const stateOffRadio = document.getElementById('stateOff');
-    const levodopaTimeDiv = document.getElementById('levodopaTimeDiv');
-    const levodopaTimeInput = document.getElementById('levodopaTime');
-    const restartTest = document.getElementById('restartTest');
-
-    const testTypeSelect = document.getElementById('testType');
-    const testDescriptionDiv = document.getElementById('testDescriptionDiv');
-    const testDescriptionText = document.getElementById('testDescription');
-    const searchPatientBtn = document.getElementById('searchPatient');
-    const patientStateDiv = document.getElementById('patientStateDiv');
-    const aptitudeDiv = document.getElementById('aptitudeDiv');
-    const startTestButton = document.getElementById('iniciarPrueba');
-    const notes = document.getElementById('notes');
-    // const stopTestButton = document.getElementById('stopTest')
-    // const stopTestModal = new bootstrap.Modal(document.getElementById('stopTestModal'));
-
-
-
-    // stopTestButton.disabled = true;
-
-    // function toggleStopButton() {
-    //     stopTestButton.disabled = !testInProgress; 
-    // }
-
-    const okbtn = document.getElementById('okbtn');
-    client = new Paho.MQTT.Client('broker.hivemq.com', Number(8884), "A003781213Unicosuperunico");
-
-    try {
-        const reconnectOptions = {
-            onSuccess: function () {
-                console.log("Conectado al servidor MQTT!")
-                client.subscribe("test/icesi/dlp");
-            },
-            onFailure: function (message) {
-                console.error("Connection failed: ", message.errorMessage);
-            },
-            keepAliveInterval: 30,
-            cleanSession: true
-        };
-
-        client.connect(reconnectOptions);
-    } catch(e) {
-        console.error("Error al conectarse al MQTT", e);
-    }
-
-    client.onConnectionLost = function(responseObject) {
-        if (responseObject.errorCode !== 0) {
-            console.error("Connection lost:", responseObject.errorMessage);
-            client.connect(reconnectOptions);  // Now this will work
-        }
-    };
-
-    let currentSampleId = null;
-    let currentTestTypeId = null;
-    let testTypeMapping = new Map();
-
     const token = localStorage.getItem("token");
     if (!token) {
         alert("No se encontró el token de autorización. Por favor, inicia sesión.");
         return;
     }
 
+    // Initialize MQTT Client
+    const client = createMQTTClient();
+
+    // State Variables
+    let currentSampleId = null;
+    let currentTestTypeId = null;
+    let testTypeMapping = new Map();
+
+    // Check for existing patient ID in URL
     const urlParams = new URLSearchParams(window.location.search);
     const idNumber = urlParams.get('idNumber');
-    if (idNumber) {
-        document.getElementById('patientId').value = idNumber;
-        searchPatient(idNumber);
-    }
+    searchPatient(idNumber, token).then(data => updatePatientInformation(data));
 
-    const stateOnRadio = document.getElementById('stateOn');
+    // Event Listeners
     stateOnRadio.addEventListener('change', function () {
         if (this.checked) {
             levodopaTimeDiv.style.display = 'none';
@@ -118,239 +39,287 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // stateOffRadio.addEventListener('change', function () {
-    //     levodopaTimeDiv.style.display = this.checked ? 'block' : 'none';
-    //     levodopaTimeInput.required = this.checked;
-    // });
-
-    searchPatientBtn.addEventListener('click', function () {
-        const patientId = document.getElementById('patientId').value;
-        searchPatient(patientId);
+    stateOffRadio.addEventListener('change', function () {
+        levodopaTimeDiv.style.display = this.checked ? 'block' : 'none';
+        levodopaTimeInput.required = this.checked;
     });
-
-    function searchPatient(patientId) {
-        if (patientId) {
-            fetch(`http://localhost:8080/evaluated/details/${patientId}`, {
-                headers: {
-                    "Authorization": `Bearer ${token}`
-                }
-            })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Paciente no encontrado');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    document.getElementById('evaluatedId').textContent = data.idNumber;
-                    document.getElementById('evaluatedName').textContent = data.firstName;
-                    document.getElementById('evaluatedLastName').textContent = data.lastName;
-
-                    const birthDate = new Date(data.dateOfBirth);
-                    if (!isNaN(birthDate)) {
-                        document.getElementById('evaluatedBirthDate').textContent = birthDate.toLocaleDateString();
-                    } else {
-                        document.getElementById('evaluatedBirthDate').textContent = 'Fecha inválida';
-                    }
-
-                    document.getElementById('evaluatedEmail').textContent = data.email;
-                    document.getElementById('evaluatedType').textContent = data.typeOfEvaluated;
-                    document.getElementById('evaluatedSex').textContent = data.sex;
-
-                    document.getElementById('evaluatedInfoDiv').style.display = 'block';
-
-                    if (data.evaluated_type === 'Control') {
-                        patientStateDiv.style.display = 'none';
-                        aptitudeDiv.style.display = 'none';
-                    } else if (data.evaluated_type === 'Paciente') {
-                        patientStateDiv.style.display = 'block';
-                        aptitudeDiv.style.display = 'block';
-                    }
-
-                    startTestButton.disabled = false;
-                })
-                .catch(error => {
-                    alert(error.message);
-                    patientStateDiv.style.display = 'none';
-                    aptitudeDiv.style.display = 'none';
-                    startTestButton.disabled = true;
-                    document.getElementById('evaluatedInfoDiv').style.display = 'none';
-                });
-        } else {
-            alert('Por favor, ingrese el ID del evaluado');
-        }
-    }
 
     form.addEventListener('submit', function (e) {
         e.preventDefault();
-        console.log('Form submitted');
         currentSampleId = Date.now();
         restartTest.disabled = false;
     });
 
-    restartTest.addEventListener('click', async function () {
-        if (confirm('¿Está seguro que desea reiniciar la prueba? Los datos recolectados serán eliminados permanentemente.')) {
-            try {
-                if (currentSampleId && currentTestTypeId) {
-                    const evaluatedId = document.getElementById('evaluatedId').textContent;
-                    console.log('ID del evaluado:', evaluatedId);
-                    console.log('ID del tipo de prueba:', currentTestTypeId);
-                    console.log('Eliminando muestra:', currentSampleId);
-
-                    const response = await fetch(
-                        `http://localhost:8080/api/samples?evaluatedIdNumber=${evaluatedId}&id=${currentSampleId}&testTypeId=${currentTestTypeId}`,
-                        {
-                            method: 'DELETE',
-                            headers: {
-                                "Authorization": `Bearer ${token}`
-                            }
-                        }
-                    );
-
-                    if (!response.ok) {
-                        if (response.status === 404) {
-                            console.log('La muestra ya no existe en la base de datos');
-                        } else {
-                            throw new Error('Error al eliminar la muestra');
-                        }
-                    }
-                }
-
-                form.reset();
-                testInProgress = false;
-                startTestButton.disabled = true;
-                // toggleStopButton();
-                // this.disabled = true;
-                levodopaTimeDiv.style.display = 'none';
-                patientStateDiv.style.display = 'none';
-                aptitudeDiv.style.display = 'none';
-                startTestButton.disabled = true;
-
-                document.getElementById('evaluatedInfoDiv').style.display = 'none';
-                document.getElementById('testDescriptionDiv').style.display = 'none';
-                document.getElementById('resultSpace').innerHTML = 'Espacio para mostrar la gráfica resultante';
-
-                currentSampleId = null;
-                currentTestTypeId = null;
-                testTypeMapping.clear();
-
-            } catch (error) {
-                console.error('Error during reset:', error);
-                alert('Hubo un error al reiniciar la prueba. Por favor, intente nuevamente.');
-            }
-        }
-    });
-
-    // Manejar el cambio en el selector de tipo de prueba
-    testTypeSelect.addEventListener('change', function () {
+    testTypeSelect.addEventListener('change', async function () {
         const selectedTest = testTypeSelect.value;
+        console.log('Selected Test:', selectedTest);
 
-        // Si se selecciona una prueba, hacer una petición al backend
         if (selectedTest) {
-            fetch(`http://localhost:8080/api/getTestDescription?testType=${selectedTest}`, {
-                headers: {
-                    "Authorization": `Bearer ${token}`
-                }
-            })
-                .then(response => response.json())
-                .then(data => {
-                    testDescriptionText.value = data.description;
-                    testDescriptionDiv.style.display = 'block';
-                    testTypeMapping.set(selectedTest, data.id);
-                    currentTestTypeId = data.id;
+            const result = await fetchTestDescription(selectedTest, token);
+            currentTestTypeId = updateTestDescription(result, testDescriptionDiv, testDescriptionText);
 
-                    patientStateDiv.style.display = 'block';
-                    aptitudeDiv.style.display = 'block';
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    testDescriptionDiv.style.display = 'none';
-                    testDescriptionText.value = '';
-                    console.error('Error al obtener la descripción de la prueba:', error);
-                });
+            if (currentTestTypeId) {
+                document.getElementById('patientStateDiv').style.display = 'block';
+                document.getElementById('aptitudeDiv').style.display = 'block';
+            }
         } else {
             testDescriptionDiv.style.display = 'none';
             testDescriptionText.value = '';
             currentTestTypeId = null;
-
-            patientStateDiv.style.display = 'none';
-            aptitudeDiv.style.display = 'none';
+            document.getElementById('patientStateDiv').style.display = 'none';
+            document.getElementById('aptitudeDiv').style.display = 'none';
         }
     });
 
-    startTestButton.addEventListener('click', function () {
-        // Bloquear temporalmente el botón de inicio de prueba
+    restartTest.addEventListener('click', async function () {
+        if (confirm('¿Está seguro que desea reiniciar la prueba? Los datos recolectados serán eliminados permanentemente.')) {
+            const evaluatedId = document.getElementById('evaluatedId').textContent;
+
+            if (currentSampleId && currentTestTypeId) {
+                await deleteSample(evaluatedId, currentSampleId, currentTestTypeId, token);
+            }
+
+            resetFormAndUI();
+            currentSampleId = null;
+            currentTestTypeId = null;
+            testTypeMapping.clear();
+        }
+    });
+
+    startTestButton.addEventListener('click', async function () {
         startTestButton.disabled = true;
 
-        testInProgress = true;
-        // stopTestButton.disabled = false;
-
-        // Publicar un mensaje para verificar si hay errores
-        // const checkErrorMessage = 'check_error';
-        // const mqttCheckMessage = new Paho.MQTT.Message(checkErrorMessage);
-        // // mqttCheckMessage.destinationName = "test/icesi/dlp/check";
-        // mqttCheckMessage.destinationName = "test/icesi/dlp";
-        // client.send(mqttCheckMessage);
         const evaluatedId = document.getElementById('evaluatedId').textContent ||
             document.getElementById('patientId').value;
         const testTypeId = testTypeSelect.value;
         const patientState = document.querySelector('input[name="patientState"]:checked');
         const aptitudeValue = document.getElementById('aptitude').value;
-        localStorage.setItem("notas",notes.value)
 
-        console.log("notas guardadas: " ,localStorage.getItem("notas"))
+        localStorage.setItem("notas", notes.value);
+        console.log("notas guardadas: ", localStorage.getItem("notas"));
 
-        // Verificar que todos los campos necesarios no estén vacíos
         if (evaluatedId && testTypeId && patientState && aptitudeValue) {
-            // Publicar el mensaje para iniciar la prueba
             const testMessage = `init~~${evaluatedId}~~${testTypeId}`;
-            const mqttTestMessage = new Paho.MQTT.Message(testMessage);
-            mqttTestMessage.destinationName = "test/icesi/dlp";
-            client.send(mqttTestMessage);
-
-            // toggleStopButton();
-
-            console.log(`Prueba iniciada: ${testMessage}`);
-            setTimeout(() => {
-                alert('Prueba realizada con exito para el paciente con id: ' + evaluatedId);
-
-                // Habilitar el botón nuevamente
-                startTestButton.disabled = false;
-            }, 5500)
+            await startTest(client, testMessage);
+            startTestButton.disabled = false;
         } else {
             alert('Por favor, complete todos los campos requeridos antes de iniciar la prueba.');
-            startTestButton.disabled = false; // Habilitar el botón si faltan campos
+            startTestButton.disabled = false;
         }
-
-        // console.log('Mensaje enviado para verificar errores.');
-
-        // // Suscribirse al tópico para esperar la respuesta
-        // client.subscribe("test/icesi/dlp/check_response");
 
         console.log('Evaluated ID:', evaluatedId);
         console.log('Test Type:', testTypeId);
         console.log('Patient State:', patientState);
         console.log('Aptitude:', aptitudeValue);
     });
-
-
-    // stopTestButton.addEventListener('click', () => {
-    //     // Detener el muestreo enviando un mensaje MQTT al ESP32
-    //     const message = "stop";
-    //     const mqttMessage = new Paho.MQTT.Message(message);
-    //     mqttMessage.destinationName = "test/icesi/dlp";
-
-    //     client.send(mqttMessage);
-    //     console.log(`Mensaje enviado: ${message}`);
-    //     console.log("Muestreo detenido");
-
-    //     stopTestModal.show();
-
-    //     testInProgress = false;
-
-    //     stopTestButton.disabled = true;
-
-    //     startTestButton.disabled = false;
-    // });
-
 });
+
+function createMQTTClient() {
+    const client = new Paho.MQTT.Client(
+        'broker.hivemq.com',
+        Number(8884),
+        `A003781213Unicosuperunicoo`
+    );
+
+    const reconnectOptions = {
+        useSSL: true, // Habilitar TLS/SSL
+        onSuccess: function () {
+            console.log("Conectado al servidor MQTT!");
+            client.subscribe("test/icesi/dlp");
+        },
+        onFailure: function (message) {
+            console.error("Connection failed: ", message.errorMessage || "Unknown error");
+        },
+        keepAliveInterval: 30,
+        cleanSession: true
+    };
+
+    try {
+        client.connect(reconnectOptions);
+    } catch (e) {
+        console.error("Error al conectarse al MQTT", e);
+    }
+
+    client.onConnectionLost = function (responseObject) {
+        if (responseObject.errorCode !== 0) {
+            console.error("Connection lost:", responseObject.errorMessage || "Unknown error");
+            client.connect(reconnectOptions);
+        }
+    };
+
+    return client;
+}
+
+
+// Patient Search Functionality
+async function searchPatient(patientId, token) {
+    if (!patientId) {
+        alert('Por favor, ingrese el ID del evaluado');
+        return null;
+    }
+
+    try {
+        const response = await fetch(`http://localhost:8080/evaluated/details/${patientId}`, {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`,
+            }
+        });
+
+        if (response.status === 403) {
+            alert('Debe iniciar sesión para buscar un paciente');
+            window.location.href = './../screens/index.html';
+            return;
+        } else if (response.status === 404) {
+            alert('Paciente no encontrado');
+            return;
+        } else if (!response.ok) {
+            throw new Error('Error al buscar el paciente');
+        }
+
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        alert(error.message);
+        return null;
+    }
+}
+
+// Update Patient Information in UI
+function updatePatientInformation(data) {
+    if (!data) {
+        document.getElementById('evaluatedInfoDiv').style.display = 'none';
+        return false;
+    }
+
+    // Update patient details
+    document.getElementById('evaluatedId').textContent = data.idNumber;
+    document.getElementById('evaluatedName').textContent = data.firstName;
+    document.getElementById('evaluatedLastName').textContent = data.lastName;
+
+    const birthDate = new Date(data.dateOfBirth);
+    document.getElementById('evaluatedBirthDate').textContent =
+        !isNaN(birthDate) ? birthDate.toLocaleDateString() : 'Fecha inválida';
+
+    document.getElementById('evaluatedEmail').textContent = data.email;
+    document.getElementById('evaluatedType').textContent = data.typeOfEvaluated;
+    document.getElementById('evaluatedSex').textContent = data.sex;
+
+    // Show/hide patient state and aptitude sections based on evaluated type
+    const patientStateDiv = document.getElementById('patientStateDiv');
+    const aptitudeDiv = document.getElementById('aptitudeDiv');
+    const startTestButton = document.getElementById('iniciarPrueba');
+
+    if (data.evaluated_type === 'Control') {
+        patientStateDiv.style.display = 'none';
+        aptitudeDiv.style.display = 'none';
+    } else if (data.evaluated_type === 'Paciente') {
+        patientStateDiv.style.display = 'block';
+        aptitudeDiv.style.display = 'block';
+    }
+
+    document.getElementById('evaluatedInfoDiv').style.display = 'block';
+    startTestButton.disabled = false;
+
+    return true;
+}
+
+// Fetch Test Description
+async function fetchTestDescription(selectedTest, token) {
+    console.log('Selected Test:', selectedTest);
+    if (!selectedTest) {
+        return { success: false, data: null };
+    }
+
+    try {
+        const response = await fetch(`http://localhost:8080/test-type/get-test-description?testType=${selectedTest}`, {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`,
+            }
+        });
+
+        const data = await response.json();
+        return { success: true, data };
+    } catch (error) {
+        console.error('Error al obtener la descripción de la prueba:', error);
+        return { success: false, data: null };
+    }
+}
+
+// Update Test Description in UI
+function updateTestDescription(result, testDescriptionDiv, testDescriptionText) {
+    if (result.success) {
+        testDescriptionText.value = result.data.description;
+        testDescriptionDiv.style.display = 'block';
+        return result.data.id;
+    } else {
+        testDescriptionDiv.style.display = 'none';
+        testDescriptionText.value = '';
+        return null;
+    }
+}
+
+// Delete Sample
+async function deleteSample(evaluatedId, currentSampleId, currentTestTypeId, token) {
+    try {
+        const response = await fetch(
+            `http://localhost:8080/api/samples?evaluatedIdNumber=${evaluatedId}&id=${currentSampleId}&testTypeId=${currentTestTypeId}`,
+            {
+                method: 'DELETE',
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                }
+            }
+        );
+
+        if (!response.ok) {
+            if (response.status === 404) {
+                console.log('La muestra ya no existe en la base de datos');
+            } else {
+                throw new Error('Error al eliminar la muestra');
+            }
+        }
+
+        return true;
+    } catch (error) {
+        console.error('Error during reset:', error);
+        alert('Hubo un error al reiniciar la prueba. Por favor, intente nuevamente.');
+        return false;
+    }
+}
+
+// Reset Form and UI
+function resetFormAndUI() {
+    const form = document.getElementById('evaluationForm');
+    const startTestButton = document.getElementById('iniciarPrueba');
+    const restartTest = document.getElementById('restartTest');
+
+    form.reset();
+    startTestButton.disabled = true;
+    restartTest.disabled = false;
+
+    document.getElementById('levodopaTimeDiv').style.display = 'none';
+    document.getElementById('patientStateDiv').style.display = 'none';
+    document.getElementById('aptitudeDiv').style.display = 'none';
+    document.getElementById('evaluatedInfoDiv').style.display = 'none';
+    document.getElementById('testDescriptionDiv').style.display = 'none';
+    document.getElementById('resultSpace').innerHTML = 'Espacio para mostrar la gráfica resultante';
+}
+
+// Start Test
+function startTest(client, testMessage) {
+    const mqttTestMessage = new Paho.MQTT.Message(testMessage);
+    mqttTestMessage.destinationName = "test/icesi/dlp";
+    client.send(mqttTestMessage);
+
+    console.log(`Prueba iniciada: ${testMessage}`);
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            const evaluatedId = testMessage.split('~~')[1];
+            alert('Prueba realizada con exito para el paciente con id: ' + evaluatedId);
+            resolve();
+        }, 5500);
+    });
+}
+
