@@ -1,56 +1,131 @@
 document.addEventListener("DOMContentLoaded", async () => {
-    let sensor1ChartInstance = null;
-    let sensor2ChartInstance = null;
+    // Get parameters from URL
     const token = localStorage.getItem("token");
     const urlParams = new URLSearchParams(window.location.search);
     const evaluatedId = urlParams.get('idNumber');
     const sampleID = urlParams.get('sampleId');
     const testTypeId = urlParams.get('testTypeId');
     const comments = urlParams.get('sampleComment');
-    const commentsParagraph = document.getElementById("commentsIdSection")
 
-    commentsParagraph.innerText = localStorage.getItem("notas")
-    console.log("notas: ",localStorage.getItem("notas"))
+    // Set comments paragraph
+    const commentsParagraph = document.getElementById("commentsIdSection");
+    commentsParagraph.innerText = localStorage.getItem("notas");
+    console.log("notas: ", localStorage.getItem("notas"));
 
+    // Validate parameters
+    if (!validateRequiredParameters(token, evaluatedId, sampleID, testTypeId)) {
+        return;
+    }
+
+    // Setup back button
+    setupBackButton(evaluatedId);
+
+    // Fetch and display sample details
+    await fetchSampleDetails(sampleID, evaluatedId, testTypeId, token, comments);
+});
+
+// Utility Functions
+function validateRequiredParameters(token, evaluatedId, sampleID, testTypeId) {
     if (!token) {
         alert("No se encontró el token de autorización. Por favor, inicia sesión.");
-        return;
+        return false;
     }
 
     if (!evaluatedId) {
         alert("No se encontró el ID del evaluado. Por favor, selecciona un evaluado.");
-        return;
+        return false;
     }
 
     if (!sampleID) {
         alert("No se encontró el sample ID de la muestra.");
-        return;
+        return false;
     }
 
     if (!testTypeId) {
         alert("No se encontró el ID del test, por favor reintentar.");
-        return;
+        return false;
     }
 
-    console.log("ID del evaluado:", evaluatedId);
-    console.log("ID del tipo de test:", testTypeId);
+    return true;
+}
 
-    // Asignar el onclick del botón con el href dinámico
+function setupBackButton(evaluatedId) {
     const backButton = document.getElementById("backButton");
     backButton.onclick = () => {
         window.location.href = `./samples-list.html?id=${evaluatedId}`;
     };
+}
 
+function getTestTypeString(testTypeId) {
+    return testTypeId == 1 ? "Foot tapping." : "Heel tapping.";
+}
+
+function getAptitudeString(typeAptitudeString) {
+    return typeAptitudeString === "A" ? "Suitable." : "Not suitable.";
+}
+
+function displaySampleDetails(data, testTypeId, comments) {
+    const typeTestString = getTestTypeString(testTypeId);
+    const typeAptitudeString = getAptitudeString(data.aptitude);
+
+    document.getElementById("sampleId").textContent = data.id || "N/A";
+    document.getElementById("sampleTypeOfTestId").textContent = typeTestString || "N/A";
+    document.getElementById("sampleDate").textContent = new Date(data.date).toLocaleString() || "N/A";
+    document.getElementById("sampleOnOffState").textContent = data.onOffState || "N/A";
+    document.getElementById("sampleAptitude").textContent = typeAptitudeString || "N/A";
+
+    // Display comments
+    const commentsArray = comments.split(',');
+    const commentsHtml = commentsArray.map(comment => `<div>${comment.trim()}</div>`).join('');
+    document.getElementById("sampleComments").innerHTML = commentsHtml;
+}
+
+function setupEditModal(sampleID, token) {
+    const editBtn = document.getElementById('editBtn');
+    const editSampleDataModal = document.getElementById('editSampleDataModal');
+    const errorSavingChangesModal = new bootstrap.Modal(document.getElementById('saveChangesErrorModal'));
+    const successSavingChangesModal = new bootstrap.Modal(document.getElementById('saveChangesSuccessModal'));
+    const saveChangesBtn = document.getElementById('saveChangesBtn');
+
+    editBtn.addEventListener('click', () => {
+        const modalInstance = bootstrap.Modal.getOrCreateInstance(editSampleDataModal);
+        modalInstance.show();
+    });
+
+    saveChangesBtn.addEventListener("click", async () => {
+        const modalInstance = bootstrap.Modal.getOrCreateInstance(editSampleDataModal);
+        modalInstance.hide();
+
+        await saveChanges(token, sampleID, successSavingChangesModal, errorSavingChangesModal);
+    });
+}
+
+function setupSensorCharts(data) {
+    let sensor1ChartInstance = null;
+    let sensor2ChartInstance = null;
+
+    const sensor1Data = data.rawData?.sensors?.sensor1
+        ? processSensorData(data.rawData.sensors.sensor1)
+        : getEmptySensorData();
+    const sensor2Data = data.rawData?.sensors?.sensor2
+        ? processSensorData(data.rawData.sensors.sensor2)
+        : getEmptySensorData();
+
+    console.log(sensor1Data);
+    console.log(sensor2Data);
+
+    resetChart('sensor1Chart', sensor1ChartInstance);
+    resetChart('sensor2Chart', sensor2ChartInstance);
+
+    sensor1ChartInstance = createChart('sensor1Chart', sensor1Data, 'Sensor 1');
+    sensor2ChartInstance = createChart('sensor2Chart', sensor2Data, 'Sensor 2');
+}
+
+async function fetchSampleDetails(sampleID, evaluatedId, testTypeId, token, comments) {
     try {
-        const response = await fetch(`http://localhost:8080/hardware_controller/sample?sampleID=${sampleID}&evaluatedId=${evaluatedId}&testTypeId=${testTypeId}`, {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`
-            }
-        });
+        const url = `http://localhost:8080/samples?sampleID=${sampleID}&evaluatedId=${evaluatedId}&testTypeId=${testTypeId}`;
 
-        const responseSample = await fetch(`http://localhost:8080/sample/samples/${evaluatedId}`, {
+        const response = await fetch(url, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
@@ -68,89 +143,24 @@ document.addEventListener("DOMContentLoaded", async () => {
             throw new Error('Error en la respuesta del servidor.');
         }
 
-        if (!responseSample.ok) {
-            if (response.status === 500) {
-                console.error('Error 500: La muestra no existe.');
-                alert('La muestra no existe.');
-            } else {
-                alert('Error al obtener los datos del servidor.');
-            }
-            throw new Error('Error en la respuesta del servidor.');
-        }
-
-        let typeTestString = "";
-        let typeAptitudeString = "";
-
         const data = await response.json();
-        const sampleData = await responseSample.json();
-
-        if (testTypeId == 1) {
-            typeTestString = "Foot tapping.";
-        } else {
-            typeTestString = "Heel tapping.";
-        }
-
-        if (typeAptitudeString === "A") {
-            typeAptitudeString = "Suitable.";
-        } else {
-            typeAptitudeString = "Not suitable.";
-        }
-
         console.log(data);
-        console.log(sampleData);
 
-        document.getElementById("sampleId").textContent = data.id || "N/A";
-        document.getElementById("sampleTypeOfTestId").textContent = typeTestString || "N/A";
-        document.getElementById("sampleDate").textContent = new Date(data.date).toLocaleString() || "N/A";
-        document.getElementById("sampleOnOffState").textContent = data.onOffState || "N/A";
-        document.getElementById("sampleAptitude").textContent = typeAptitudeString || "N/A";
+        // Display sample details
+        displaySampleDetails(data, testTypeId, comments);
 
-        const commentsArray = comments.split(','); 
-        const commentsHtml = commentsArray.map(comment => `<div>${comment.trim()}</div>`).join('');
-        document.getElementById("sampleComments").innerHTML = commentsHtml;
+        // Setup edit modal
+        setupEditModal(sampleID, token);
 
-        const editBtn = document.getElementById('editBtn');
-        const editSampleDataModal = document.getElementById('editSampleDataModal');
-        const errorSavingChangesModal = new bootstrap.Modal(document.getElementById('saveChangesErrorModal'));
-        const successSavingChangesModal = new bootstrap.Modal(document.getElementById('saveChangesSuccessModal'));
-        const saveChangesBtn = document.getElementById('saveChangesBtn');
-        
+        // Setup sensor charts
+        setupSensorCharts(data);
 
-        editBtn.addEventListener('click', () => {
-            const modalInstance = bootstrap.Modal.getOrCreateInstance(editSampleDataModal);
-            modalInstance.show();
-        });
-
-        saveChangesBtn.addEventListener("click", async () => {
-            const modalInstance = bootstrap.Modal.getOrCreateInstance(editSampleDataModal);
-            modalInstance.hide();
-    
-            await saveChanges(token, sampleID, successSavingChangesModal, errorSavingChangesModal);
-        });
-
-
-        const sensor1Data = data.rawData?.sensors?.sensor1
-            ? processSensorData(data.rawData.sensors.sensor1)
-            : getEmptySensorData();
-        const sensor2Data = data.rawData?.sensors?.sensor2
-            ? processSensorData(data.rawData.sensors.sensor2)
-            : getEmptySensorData();
-
-        console.log(sensor1Data);
-        console.log(sensor2Data);
-
-        resetChart('sensor1Chart', sensor1ChartInstance);
-        resetChart('sensor2Chart', sensor2ChartInstance);
-
-        sensor1ChartInstance = createChart('sensor1Chart', sensor1Data, 'Sensor 1');
-        sensor2ChartInstance = createChart('sensor2Chart', sensor2Data, 'Sensor 2');
-        
-
+        return data;
     } catch (error) {
         console.error("Error:", error);
         alert("Error fetching: " + error.message);
     }
-});
+}
 
 async function saveChanges(token, sampleId, successModal, errorModal) {
     if (!token) {
@@ -192,9 +202,6 @@ async function saveChanges(token, sampleId, successModal, errorModal) {
         errorSavingChangesModal.show();
     }
 }
-
-
-
 
 // Función para procesar los datos de un sensor
 function processSensorData(sensor) {

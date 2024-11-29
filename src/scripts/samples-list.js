@@ -16,11 +16,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     console.log("ID del evaluado:", evaluatedId);
 
     try {
-        const response = await fetch(`http://localhost:8080/sample/samples/${evaluatedId}`, {
+        const response = await fetch(`http://localhost:8080/samples/${evaluatedId}`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`
+                "Authorization": `Bearer ${token}`,
             }
         });
 
@@ -39,7 +39,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             console.log(sample.id)
             console.log(sample)
             console.log(sample.comments)
-            row.onclick = function() { 
+            row.onclick = function () {
                 window.location.href = './sample-view.html?idNumber=' + evaluatedId + "&sampleId=" + sample.id + "&testTypeId=" + sample.typeOfTestId + "&sampleComment=" + sample.comments;
             };
 
