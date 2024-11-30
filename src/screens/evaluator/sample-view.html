@@ -133,20 +133,55 @@
                 </div>
             </div>
         </div>
-
-        <div class="mt-4">
-            <div class="card">
-                <div class="card-body" id="resultSpace">
-                    <h3>Gráficas de Acelerómetro y Giroscopio</h3>
-                    <!-- Contenedores para las gráficas -->
-                    <canvas id="sensor1Chart" width="400" height="200"></canvas>
-                    <canvas id="sensor2Chart" width="400" height="200"></canvas>
-
+        <div class="accordion mt-4" id="dataAccordion">
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingGraphs">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseGraphs" aria-expanded="true" aria-controls="collapseGraphs" style="font-size: 1.5rem;">
+                        Gráficas de Acelerómetro y Giroscopio
+                    </button>
+                </h2>
+                <div id="collapseGraphs" class="accordion-collapse collapse show" aria-labelledby="headingGraphs" data-bs-parent="#dataAccordion">
+                    <div class="accordion-body">
+                        <canvas id="sensor1Chart" width="400" height="200"></canvas>
+                        <canvas id="sensor2Chart" width="400" height="200"></canvas>
+                    </div>
                 </div>
             </div>
-            <div class="mt-3 mb-5 text-end">
-                <button type="button" class="btn btn-danger" id="discardButton">Eliminar prueba</button>
+        
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingFFT">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFFT" aria-expanded="false" aria-controls="collapseFFT" style="font-size: 1.5rem;">
+                        Gráficas del Análisis FFT
+                    </button>
+                </h2>
+                <div id="collapseFFT" class="accordion-collapse collapse" aria-labelledby="headingFFT" data-bs-parent="#dataAccordion">
+                    <div class="accordion-body">
+                        <canvas id="fftChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
             </div>
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingFFT">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEKF" aria-expanded="false" aria-controls="collapseFFT" style="font-size: 1.5rem;">
+                        Gráficas del Análisis del Filtro de Kalman Extendido
+                    </button>
+                </h2>
+                <div id="collapseEKF" class="accordion-collapse collapse" aria-labelledby="headingEKF" data-bs-parent="#dataAccordion">
+                    <div class="accordion-body">
+                        <h5>Estados Predichos y Actualizados (Sensor 1)</h5>
+                        <canvas id="sensor1StatesChart" width="400" height="200"></canvas>
+        
+                        <h5>Estados Predichos y Actualizados (Sensor 2)</h5>
+                        <canvas id="sensor2StatesChart" width="400" height="200"></canvas>
+        
+                        <h5>Orientaciones Roll y Pitch (Sensor 1)</h5>
+                        <canvas id="sensor1OrientationChart" width="400" height="200"></canvas>
+        
+                        <h5>Orientaciones Roll y Pitch (Sensor 2)</h5>
+                        <canvas id="sensor2OrientationChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+            </div>      
         </div>
         <div class="d-flex justify-content-end mt-4">
             <button id="backButton" class="btn btn-primary d-flex align-items-center">

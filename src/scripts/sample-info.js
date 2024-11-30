@@ -164,16 +164,17 @@ async function fetchSampleDetails(sampleID, evaluatedId, testTypeId, token) {
         });
 
         if (!response.ok) {
-            if (response.status === 500) {
-                console.error('Error 500: La muestra no existe.');
-                alert('La muestra no existe.');
-            } else {
-                alert('Error al obtener los datos del servidor.');
-            }
             throw new Error('Error en la respuesta del servidor.');
         }
 
         const data = await response.json();
+
+        // Mostrar detalles de la muestra
+        displaySampleDetails(data.sampleDetails, testTypeId);
+
+        // Configurar gráficos de sensores
+        setupSensorCharts(data.sampleDetails);
+
         console.log("respuesta obtenida en el fetchSample:", data);
 
         // Display sample details
@@ -182,14 +183,178 @@ async function fetchSampleDetails(sampleID, evaluatedId, testTypeId, token) {
         // Setup edit modal
         setupEditModal(sampleID, evaluatedId, testTypeId, token);
 
-        // Setup sensor charts
-        setupSensorCharts(data);
+
+        // Configurar el gráfico FFT
+        const fftSection = document.getElementById("collapseFFT");
+        if (fftSection) {
+            fftSection.classList.add("show");
+        }
+
+        if (data.fftAnalysis && data.fftAnalysis.fft_analysis) {
+            setupFFTChart(data.fftAnalysis.fft_analysis);
+        } else {
+            console.error("Datos de FFT no disponibles.");
+            document.getElementById("fftChart").parentElement.innerHTML =
+                "<p>No hay datos disponibles para el análisis FFT.</p>";
+        }
+
+        // Configurar gráficos del análisis EKF
+        const ekfSection = document.getElementById("collapseEKF");
+        if (ekfSection) {
+            ekfSection.classList.add("show");
+        }
+
+        if (data.fftAnalysis && data.fftAnalysis.ekf_analysis) {
+            setupEKFCharts(data.fftAnalysis.ekf_analysis);
+        } else {
+            console.error("Datos de EKF no disponibles.");
+            document.getElementById("collapseEKF").innerHTML =
+                "<p>No hay datos disponibles para el análisis del Filtro de Kalman Extendido.</p>";
+        }
 
         return data;
     } catch (error) {
         console.error("Error:", error);
-        alert("Error fetching: " + error.message);
+        alert("Error al obtener datos: " + error.message);
     }
+}
+
+
+function setupFFTChart(fftAnalysis) {
+    const fftCanvas = document.getElementById("fftChart");
+    if (!fftCanvas) {
+        console.error("Canvas FFT no encontrado en el DOM.");
+        return;
+    }
+
+    const ctx = fftCanvas.getContext("2d");
+    const fftData = fftAnalysis.spectrum.map((value, index) => {
+        return { x: fftAnalysis.frequencies[index], y: value };
+    });
+
+    new Chart(ctx, {
+        type: "line",
+        data: {
+            labels: fftAnalysis.frequencies,
+            datasets: [
+                {
+                    label: "Espectro de FFT",
+                    data: fftData.map(point => point.y),
+                    borderColor: "rgba(75, 192, 192, 1)",
+                    borderWidth: 2,
+                    pointRadius: 3,
+                    tension: 0.1,
+                    fill: false,
+                }
+            ]
+        },
+        options: {
+            plugins: {
+                title: {
+                    display: true,
+                    text: "Transformada Rápida de Fourier (FFT)"
+                }
+            },
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: "Frecuencia (Hz)"
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: "Amplitud"
+                    }
+                }
+            }
+        }
+    });
+}
+
+function setupEKFCharts(ekfAnalysis) {
+    // Gráfica de estados para sensor1
+    const sensor1States = ekfAnalysis.sensor_states.find(sensor => sensor.sensor_name === "sensor1").states;
+    const sensor1Predicted = sensor1States.map(state => state.predicted_state[0]); // Primer valor predicho
+    const sensor1Updated = sensor1States.map(state => state.updated_state[0]);   // Primer valor actualizado
+
+    const sensor1Time = sensor1States.map((_, index) => index + 1); // Índices como eje temporal
+
+    createLineChart('sensor1StatesChart', sensor1Time, [
+        { label: "Predicted", data: sensor1Predicted, borderColor: 'rgba(75, 192, 192, 1)' },
+        { label: "Updated", data: sensor1Updated, borderColor: 'rgba(255, 99, 132, 1)' }
+    ], "Estados Predichos y Actualizados (Sensor 1)");
+
+    // Gráfica de estados para sensor2
+    const sensor2States = ekfAnalysis.sensor_states.find(sensor => sensor.sensor_name === "sensor2").states;
+    const sensor2Predicted = sensor2States.map(state => state.predicted_state[0]); // Primer valor predicho
+    const sensor2Updated = sensor2States.map(state => state.updated_state[0]);   // Primer valor actualizado
+
+    const sensor2Time = sensor2States.map((_, index) => index + 1); // Índices como eje temporal
+
+    createLineChart('sensor2StatesChart', sensor2Time, [
+        { label: "Predicted", data: sensor2Predicted, borderColor: 'rgba(54, 162, 235, 1)' },
+        { label: "Updated", data: sensor2Updated, borderColor: 'rgba(153, 102, 255, 1)' }
+    ], "Estados Predichos y Actualizados (Sensor 2)");
+
+    // Gráfica de orientaciones para sensor1
+    const sensor1Orientations = ekfAnalysis.orientations.find(sensor => sensor.sensor_name === "sensor1").orientations;
+    const sensor1Roll = sensor1Orientations.map(orientation => orientation.roll);
+    const sensor1Pitch = sensor1Orientations.map(orientation => orientation.pitch);
+
+    createLineChart('sensor1OrientationChart', sensor1Time, [
+        { label: "Roll", data: sensor1Roll, borderColor: 'rgba(255, 159, 64, 1)' },
+        { label: "Pitch", data: sensor1Pitch, borderColor: 'rgba(255, 206, 86, 1)' }
+    ], "Orientaciones Roll y Pitch (Sensor 1)");
+
+    // Gráfica de orientaciones para sensor2
+    const sensor2Orientations = ekfAnalysis.orientations.find(sensor => sensor.sensor_name === "sensor2").orientations;
+    const sensor2Roll = sensor2Orientations.map(orientation => orientation.roll);
+    const sensor2Pitch = sensor2Orientations.map(orientation => orientation.pitch);
+
+    createLineChart('sensor2OrientationChart', sensor2Time, [
+        { label: "Roll", data: sensor2Roll, borderColor: 'rgba(75, 192, 192, 1)' },
+        { label: "Pitch", data: sensor2Pitch, borderColor: 'rgba(54, 162, 235, 1)' }
+    ], "Orientaciones Roll y Pitch (Sensor 2)");
+}
+
+function createLineChart(canvasId, labels, datasets, title) {
+    const ctx = document.getElementById(canvasId).getContext("2d");
+    new Chart(ctx, {
+        type: "line",
+        data: {
+            labels: labels,
+            datasets: datasets.map(dataset => ({
+                ...dataset,
+                fill: false,
+                borderWidth: 2,
+                tension: 0.1
+            }))
+        },
+        options: {
+            plugins: {
+                title: {
+                    display: true,
+                    text: title
+                }
+            },
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: "Tiempo"
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: "Valor"
+                    }
+                }
+            }
+        }
+    });
 }
 
 
