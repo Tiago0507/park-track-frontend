@@ -1,4 +1,3 @@
-+
 <!DOCTYPE html>
 <html lang="es" class="light-style layout-menu-fixed" dir="ltr" data-theme="theme-default"
     data-assets-path="../../assets/" data-template="vertical-menu-template-free">
@@ -38,15 +37,15 @@
 
         <div class="card mb-4">
             <div class="card-body">
-                <p><strong>ID:</strong> <span id="sampleId"></span></p>
+                <p><strong>Identificador de la Muestra:</strong> <span id="sampleId"></span></p>
                 <p><strong>Tipo de Prueba:</strong> <span id="sampleTypeOfTestId"></span></p>
-                <p><strong>Fecha:</strong> <span id="sampleDate"></span></p>
+                <p><strong>Fecha y Hora:</strong> <span id="sampleDate"></span></p>
                 <p><strong>Estado:</strong> <span id="sampleOnOffState"></span></p>
                 <p><strong>Aptitud:</strong> <span id="sampleAptitude"></span></p>
-                <p><strong>Comentarios:</strong>
-                <p id="commentsIdSection"></p>
+                <p><strong>Notas de Observación:</strong>
+                <p id="observationNotesIdSection"></p>
                 </p>
-                <ul id="sampleComments"></ul>
+                <ul id="sampleObservationNotes"></ul>
                 <button id="editBtn" class="btn btn-primary d-flex align-items-center ms-auto">
                     <i class="bx me-1"></i>
                     Editar
@@ -68,25 +67,30 @@
                             <div>
                                 <div>
                                     <input type="radio" id="onOption" name="stateOptions" value="on" checked>
-                                    <label for="onOption">On</label>
+                                    <label for="onOption">ON</label>
                                 </div>
                                 <div>
                                     <input type="radio" id="offOption" name="stateOptions" value="off">
-                                    <label for="offOption">Off</label>
+                                    <label for="offOption">OFF</label>
                                 </div>
                             </div>
                         </div>
-                        <div class="mb-3">
-                            <label for="aptitudeText" class="form-label"><strong>Aptitud:</strong></label>
-                            <input type="text" class="form-control" id="aptitudeText" placeholder="Ingrese la aptitud">
+                        <div class="mb-3" id="aptitudeDiv">
+                            <label for="aptitude" class="form-label"><strong>Aptitud para la prueba:</strong></label>
+                            <select class="form-select" id="aptitude" required>
+                                <option value="" disabled selected hidden>Seleccione la aptitud</option>
+                                <option value="Apto">Apto</option>
+                                <option value="No Apto">No Apto</option>
+                            </select>
                         </div>
                         <div class="mb-3">
-                            <label for="commentsTextArea" class="form-label"><strong>Comentarios:</strong></label>
-                            <textarea class="form-control" id="commentsTextArea" rows="3"
-                                placeholder="Ingrese los comentarios"></textarea>
+                            <label for="observationNotesTextArea" class="form-label"><strong>Notas de Observación:</strong></label>
+                            <textarea class="form-control" id="observationNotesTextArea" rows="3"
+                                placeholder="Ingrese las notas de observación"></textarea>
                         </div>
                     </div>
                     <div class="modal-footer">
+                        <button type="button" class="btn btn-danger" id="deleteObservationNotesBtn">Eliminar notas</button>
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                         <button type="button" class="btn btn-primary" id="saveChangesBtn">Guardar cambios</button>
                     </div>

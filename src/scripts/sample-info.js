@@ -5,12 +5,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     const evaluatedId = urlParams.get('idNumber');
     const sampleID = urlParams.get('sampleId');
     const testTypeId = urlParams.get('testTypeId');
-    const comments = urlParams.get('sampleComment');
-
-    // Set comments paragraph
-    const commentsParagraph = document.getElementById("commentsIdSection");
-    commentsParagraph.innerText = localStorage.getItem("notas");
-    console.log("notas: ", localStorage.getItem("notas"));
 
     // Validate parameters
     if (!validateRequiredParameters(token, evaluatedId, sampleID, testTypeId)) {
@@ -21,7 +15,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     setupBackButton(evaluatedId);
 
     // Fetch and display sample details
-    await fetchSampleDetails(sampleID, evaluatedId, testTypeId, token, comments);
+    await fetchSampleDetails(sampleID, evaluatedId, testTypeId, token);
 });
 
 // Utility Functions
@@ -57,52 +51,91 @@ function setupBackButton(evaluatedId) {
 }
 
 function getTestTypeString(testTypeId) {
-    return testTypeId == 1 ? "Foot tapping." : "Heel tapping.";
+    return testTypeId == 1 ? "Zapateo" : "Taconeo";
 }
 
-function getAptitudeString(typeAptitudeString) {
-    return typeAptitudeString === "A" ? "Suitable." : "Not suitable.";
-}
+let originalDate = null;
 
-function displaySampleDetails(data, testTypeId, comments) {
+function displaySampleDetails(data, testTypeId) {
     const typeTestString = getTestTypeString(testTypeId);
-    const typeAptitudeString = getAptitudeString(data.aptitude);
+
+    if (!originalDate) {
+        originalDate = new Date(data.date).toLocaleString() || "N/A";
+    }
 
     document.getElementById("sampleId").textContent = data.id || "N/A";
     document.getElementById("sampleTypeOfTestId").textContent = typeTestString || "N/A";
-    document.getElementById("sampleDate").textContent = new Date(data.date).toLocaleString() || "N/A";
+    document.getElementById("sampleDate").textContent = originalDate;
     document.getElementById("sampleOnOffState").textContent = data.onOffState || "N/A";
-    document.getElementById("sampleAptitude").textContent = typeAptitudeString || "N/A";
+    document.getElementById("sampleAptitude").textContent = data.aptitudeForTheTest || "N/A";
 
-    // Display comments
-    const commentsArray = comments.split(',');
-    const commentsHtml = commentsArray.map(comment => `<div>${comment.trim()}</div>`).join('');
-    document.getElementById("sampleComments").innerHTML = commentsHtml;
+
+    const observationNotesContainer = document.getElementById("sampleObservationNotes");
+
+    if (data.observationNotes && data.observationNotes.length > 0) {
+        const notesHtml = data.observationNotes
+            .map(note => `<li>${note.description}</li>`)
+            .join('');
+
+        observationNotesContainer.innerHTML = notesHtml;
+    }else {
+        observationNotesContainer.innerHTML = "<li>No hay notas disponibles.</li>";
+    }
 }
 
-function setupEditModal(sampleID, token) {
+function setupEditModal(sampleID, evaluatedId, testTypeId, token) {
     const editBtn = document.getElementById('editBtn');
     const editSampleDataModal = document.getElementById('editSampleDataModal');
     const errorSavingChangesModal = new bootstrap.Modal(document.getElementById('saveChangesErrorModal'));
     const successSavingChangesModal = new bootstrap.Modal(document.getElementById('saveChangesSuccessModal'));
     const saveChangesBtn = document.getElementById('saveChangesBtn');
+    const deleteObservationNotesBtn = document.getElementById("deleteObservationNotesBtn");
+    const observationNotesTextArea = document.getElementById("observationNotesTextArea");
+    const onOption = document.getElementById('onOption');
+    const offOption = document.getElementById('offOption');
 
     editBtn.addEventListener('click', () => {
         const modalInstance = bootstrap.Modal.getOrCreateInstance(editSampleDataModal);
         modalInstance.show();
+
+        const existingNotes = document.querySelectorAll("#sampleObservationNotes li");
+        const notesText = Array.from(existingNotes).map(note => note.textContent).join("\n");
+        observationNotesTextArea.value = notesText || "";
+
+        if (offOption.checked) {
+            observationNotesTextArea.setAttribute("required", "true");
+        } else {
+            observationNotesTextArea.removeAttribute("required");
+        }
+    });
+
+    deleteObservationNotesBtn.addEventListener("click", () => {
+        observationNotesTextArea.value = "";
+    });
+
+    onOption.addEventListener("change", () => {
+        observationNotesTextArea.removeAttribute("required");
+    });
+
+    offOption.addEventListener("change", () => {
+        observationNotesTextArea.setAttribute("required", "true");
     });
 
     saveChangesBtn.addEventListener("click", async () => {
         const modalInstance = bootstrap.Modal.getOrCreateInstance(editSampleDataModal);
         modalInstance.hide();
 
-        await saveChanges(token, sampleID, successSavingChangesModal, errorSavingChangesModal);
+        await saveChanges(token, evaluatedId, sampleID, testTypeId, successSavingChangesModal, errorSavingChangesModal);
     });
 }
+
 
 function setupSensorCharts(data) {
     let sensor1ChartInstance = null;
     let sensor2ChartInstance = null;
+
+    resetChart('sensor1Chart', sensor1ChartInstance);
+    resetChart('sensor2Chart', sensor2ChartInstance);
 
     const sensor1Data = data.rawData?.sensors?.sensor1
         ? processSensorData(data.rawData.sensors.sensor1)
@@ -114,14 +147,11 @@ function setupSensorCharts(data) {
     console.log(sensor1Data);
     console.log(sensor2Data);
 
-    resetChart('sensor1Chart', sensor1ChartInstance);
-    resetChart('sensor2Chart', sensor2ChartInstance);
-
     sensor1ChartInstance = createChart('sensor1Chart', sensor1Data, 'Sensor 1');
     sensor2ChartInstance = createChart('sensor2Chart', sensor2Data, 'Sensor 2');
 }
 
-async function fetchSampleDetails(sampleID, evaluatedId, testTypeId, token, comments) {
+async function fetchSampleDetails(sampleID, evaluatedId, testTypeId, token) {
     try {
         const url = `http://localhost:8080/samples?sampleID=${sampleID}&evaluatedId=${evaluatedId}&testTypeId=${testTypeId}`;
 
@@ -144,13 +174,13 @@ async function fetchSampleDetails(sampleID, evaluatedId, testTypeId, token, comm
         }
 
         const data = await response.json();
-        console.log(data);
+        console.log("respuesta obtenida en el fetchSample:", data);
 
         // Display sample details
-        displaySampleDetails(data, testTypeId, comments);
+        displaySampleDetails(data, testTypeId);
 
         // Setup edit modal
-        setupEditModal(sampleID, token);
+        setupEditModal(sampleID, evaluatedId, testTypeId, token);
 
         // Setup sensor charts
         setupSensorCharts(data);
@@ -162,24 +192,42 @@ async function fetchSampleDetails(sampleID, evaluatedId, testTypeId, token, comm
     }
 }
 
-async function saveChanges(token, sampleId, successModal, errorModal) {
+
+async function saveChanges(token, evaluatedId, sampleId, testTypeId, successModal, errorModal) {
     if (!token) {
         alert("No se encontró el token de autorización. Por favor, inicia sesión.");
         return;
     }
 
-    const sampleOnOffState = document.querySelector('input[name="stateOptions"]:checked').value;
-    const sampleAptitude = document.getElementById("aptitudeText").value;
-    const sampleComments = document.getElementById("commentsTextArea").value;
+    const sampleOnOffState = document.querySelector('input[name="stateOptions"]:checked').value.toUpperCase();
+    const sampleAptitude = document.getElementById("aptitude").value;
+    const sampleObservationNotes = document.getElementById("observationNotesTextArea").value.split("\n").filter(note => note.trim() !== "");
+
+    console.log(sampleOnOffState)
+    console.log(sampleAptitude)
+    console.log(sampleObservationNotes)
+
+    if (sampleOnOffState === "OFF" && sampleObservationNotes.length === 0) {
+        alert("Debe ingresar al menos una nota de observación si el estado es 'OFF'.");
+        return;
+    }
+
+    if (!sampleAptitude) {
+        alert("Debe seleccionar una aptitud para la prueba.");
+        return;
+    }    
 
     const updatedSample = {
         onOffState: sampleOnOffState,
-        aptitude: sampleAptitude,
-        comments: sampleComments.split("\n") // Convertir en array si es multilinea
+        aptitudeForTheTest: sampleAptitude,
+        notes: sampleObservationNotes
     };
 
+    console.log(updatedSample)
+
     try {
-        const response = await fetch(`http://localhost:8080/sample/edit/${sampleId}`, {
+        const url = `http://localhost:8080/samples/${evaluatedId}/${sampleId}/${testTypeId}`;
+        const response = await fetch(url, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
@@ -189,17 +237,27 @@ async function saveChanges(token, sampleId, successModal, errorModal) {
         });
 
         if (!response.ok) {
+            console.error("Error al guardar los cambios:", await response.text());
             errorModal.show();
             return;
         }
 
-        successModal._element.addEventListener('hidden.bs.modal', () => {
-            const modalInstance = bootstrap.Modal.getOrCreateInstance(editSampleDataModal);
-            modalInstance.show();
-        });
+        successModal.show();
+
+        const data = {
+            id: sampleId,
+            evaluatedId: evaluatedId,
+            testTypeId: testTypeId,
+            date: originalDate,
+            onOffState: sampleOnOffState,
+            aptitudeForTheTest: sampleAptitude,
+            observationNotes: sampleObservationNotes.map(note => ({ description: note }))
+        };
+
+        displaySampleDetails(data, testTypeId);
     } catch (error) {
         console.error("Error al realizar la solicitud:", error);
-        errorSavingChangesModal.show();
+        errorModal.show(); // Mostrar modal de error
     }
 }
 
