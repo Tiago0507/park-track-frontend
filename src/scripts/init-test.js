@@ -307,6 +307,44 @@ function resetFormAndUI() {
     document.getElementById('resultSpace').innerHTML = 'Espacio para mostrar la gráfica resultante';
 }
 
+async function postObservationToLastSample(evaluatedId, testTypeId, notes) {
+    const token = localStorage.getItem("token"); // Asegúrate de que el token existe
+
+    if (!token) {
+        console.error("No se encontró el token de autorización. Por favor, inicia sesión.");
+        return;
+    }
+
+    const payload = {
+        description: notes
+    };
+
+    try {
+        const response = await fetch(`http://localhost:8080/samples/${evaluatedId}/${testTypeId}/observationToLastSample`, {
+            method: 'POST',
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`,
+            },
+            body: JSON.stringify(payload)
+        });
+
+        if (response.ok) {
+            const responseData = await response.json();
+            console.log("Observación enviada exitosamente:", responseData);
+            alert("La observación se registró con éxito.");
+        } else {
+            const errorData = await response.json();
+            console.error("Error al enviar la observación:", errorData);
+            alert("No se pudo registrar la observación. Por favor, inténtalo nuevamente.");
+        }
+    } catch (error) {
+        console.error("Error en la solicitud POST:", error);
+        alert("Ocurrió un error al intentar enviar la observación.");
+    }
+}
+
+
 // Start Test
 function startTest(client, testMessage) {
     const mqttTestMessage = new Paho.MQTT.Message(testMessage);
@@ -314,10 +352,22 @@ function startTest(client, testMessage) {
     client.send(mqttTestMessage);
 
     console.log(`Prueba iniciada: ${testMessage}`);
+
     return new Promise((resolve) => {
-        setTimeout(() => {
+        setTimeout(async () => {
             const evaluatedId = testMessage.split('~~')[1];
-            alert('Prueba realizada con exito para el paciente con id: ' + evaluatedId);
+            const testTypeId = testMessage.split('~~')[2];
+            const notesValue = localStorage.getItem("notas"); // Recuperar las notas guardadas
+
+            alert('Prueba realizada con éxito para el paciente con ID: ' + evaluatedId);
+
+            // Llamar a la función de observación después de 1 segundo
+            if (evaluatedId && testTypeId && notesValue) {
+                setTimeout(() => {
+                    postObservationToLastSample(evaluatedId, testTypeId, notesValue);
+                }, 1000); // 1 segundo después
+            }
+
             resolve();
         }, 5500);
     });
