@@ -94,7 +94,9 @@ function setupEditModal(sampleID, evaluatedId, testTypeId, token) {
     const onOption = document.getElementById('onOption');
     const offOption = document.getElementById('offOption');
 
+    console.log('Llego hasta aquí jeje')
     editBtn.addEventListener('click', () => {
+        console.log('Pudo entrar al evento del click jeje')
         const modalInstance = bootstrap.Modal.getOrCreateInstance(editSampleDataModal);
         modalInstance.show();
 
@@ -169,16 +171,17 @@ async function fetchSampleDetails(sampleID, evaluatedId, testTypeId, token) {
 
         const data = await response.json();
 
+        console.log(data.sampleDetails)
+        console.log("respuesta obtenida en el fetchSample:", data);
+
         // Mostrar detalles de la muestra
         displaySampleDetails(data.sampleDetails, testTypeId);
 
         // Configurar gráficos de sensores
         setupSensorCharts(data.sampleDetails);
 
-        console.log("respuesta obtenida en el fetchSample:", data);
-
         // Display sample details
-        displaySampleDetails(data, testTypeId);
+        displaySampleDetails(data.sampleDetails, testTypeId);
 
         // Setup edit modal
         setupEditModal(sampleID, evaluatedId, testTypeId, token);
