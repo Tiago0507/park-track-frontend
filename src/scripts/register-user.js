@@ -56,27 +56,44 @@ function submitForm() {
                 }
             }
         })
-        .then(data => {
-            alert(`${userType === "evaluator" ? "Evaluador" : "Evaluado"} registrado con éxito`);
-            resetForm();
+        .then(() => {
+            Swal.fire({
+                icon: "success",
+                title: `${userType === "evaluator" ? "Evaluador" : "Evaluado"} registrado con éxito`,
+                showConfirmButton: false,
+                timer: 2000
+            });
+            resetForm(false);
         })
         .catch(error => {
-            if (error && error.message) {
-                // Manejo de error específico para el usuario duplicado
-                if (error.message.includes("duplicate key")) {
-                    alert("Error: El usuario ya existe con ese nombre de usuario.");
-                } else {
-                    alert("Error al registrar el usuario: " + error.message);
-                }
+            if (error.message.includes("Usuario duplicado")) {
+                Swal.fire({
+                    icon: "warning",
+                    title: "Error",
+                    text: "El usuario ya existe con ese nombre de usuario.",
+                });
             } else {
-                // Manejo de errores generales
-                alert("Ocurrió un error inesperado al registrar. Por favor, intente de nuevo.");
+                Swal.fire({
+                    icon: "error",
+                    title: "Error al registrar el usuario",
+                    text: error.message,
+                });
             }
         });
 }
 
-function resetForm() {
+function resetForm(showNotification = true) {
     document.getElementById("userForm").reset();
     document.getElementById("evaluatorFields").style.display = "none";
     document.getElementById("evaluatedFields").style.display = "none";
+
+    if (showNotification) {
+        Swal.fire({
+            icon: "info",
+            title: "Formulario reiniciado",
+            text: "Puedes ingresar nuevos datos para registrar otro usuario.",
+            showConfirmButton: false,
+            timer: 2000
+        });
+    }
 }

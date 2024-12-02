@@ -2,10 +2,16 @@ document.addEventListener("DOMContentLoaded", async () => {
     const token = localStorage.getItem("token");
     const evaluatedId = new URLSearchParams(window.location.search).get("id");
 
+    const usernameElement = document.getElementById("username-in-session");
+
     if (!token) {
         alert("No se encontró el token de autorización. Por favor, inicia sesión.");
         return;
     }
+
+    const parsedToken = parseJwt(token);
+
+    usernameElement.textContent = parsedToken.sub || "Usuario desconocido";
 
     if (!evaluatedId) {
         alert("No se encontró el ID del evaluado. Por favor, selecciona un evaluado.");
@@ -55,5 +61,18 @@ document.addEventListener("DOMContentLoaded", async () => {
     } catch (error) {
         console.error("Error:", error);
         alert("Error fetching samples list: " + error.message);
+    }
+
+    function parseJwt(token) {
+        if (!token) {
+            return null;
+        }
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(function (c) {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+    
+        return JSON.parse(jsonPayload);
     }
 });
