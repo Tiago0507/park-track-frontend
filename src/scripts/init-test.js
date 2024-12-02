@@ -357,7 +357,7 @@ function startTest(client, testMessage) {
             const evaluatedId = testMessage.split('~~')[1];
             const testTypeId = testMessage.split('~~')[2];
             const notesValue = localStorage.getItem("notas"); // Recuperar las notas guardadas
-
+            localStorage.removeItem("notas")
             alert('Prueba realizada con éxito para el paciente con ID: ' + evaluatedId);
 
             // Llamar a la función de observación después de 1 segundo

@@ -168,6 +168,7 @@ async function fetchSampleDetails(sampleID, evaluatedId, testTypeId, token) {
         }
 
         const data = await response.json();
+        console.log(data)
 
         // Mostrar detalles de la muestra
         displaySampleDetails(data.sampleDetails, testTypeId);
@@ -203,7 +204,6 @@ async function fetchSampleDetails(sampleID, evaluatedId, testTypeId, token) {
         if (ekfSection) {
             ekfSection.classList.add("show");
         }
-
         if (data.fftAnalysis && data.fftAnalysis.ekf_analysis) {
             setupEKFCharts(data.fftAnalysis.ekf_analysis);
         } else {
@@ -275,6 +275,7 @@ function setupFFTChart(fftAnalysis) {
 
 function setupEKFCharts(ekfAnalysis) {
     // Gráfica de estados para sensor1
+    console.log(ekfAnalysis.sensor_states)
     const sensor1States = ekfAnalysis.sensor_states.find(sensor => sensor.sensor_name === "sensor1").states;
     const sensor1Predicted = sensor1States.map(state => state.predicted_state[0]); // Primer valor predicho
     const sensor1Updated = sensor1States.map(state => state.updated_state[0]);   // Primer valor actualizado

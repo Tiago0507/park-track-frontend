@@ -161,4 +161,3 @@ document.addEventListener("DOMContentLoaded", populateEvaluatedList);
 const username = document.getElementById("username-in-session")
 token = parseJwt(localStorage.getItem("token"))
 username.textContent = token.sub
-console.log(username.textContent)
