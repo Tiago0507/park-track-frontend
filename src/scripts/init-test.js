@@ -96,7 +96,6 @@ document.addEventListener('DOMContentLoaded', function () {
         const aptitudeValue = document.getElementById('aptitude').value;
 
         localStorage.setItem("notas", notes.value);
-        console.log("notas guardadas: ", localStorage.getItem("notas"));
 
         if (evaluatedId && testTypeId && patientState && aptitudeValue) {
             const testMessage = `init~~${evaluatedId}~~${testTypeId}`;
