@@ -6,7 +6,11 @@ document.addEventListener("DOMContentLoaded", () => {
         
         const token = localStorage.getItem("token");
         if (!token) {
-            alert("No se encontró el token de autorización. Por favor, inicia sesión.");
+            Swal.fire({
+                icon: "error",
+                title: "Autorización requerida",
+                text: "No se encontró el token de autorización. Por favor, inicia sesión.",
+            });
             return;
         }
         
@@ -103,7 +107,11 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         } catch (error) {
             console.error("Error:", error);
-            alert("Error fetching evaluated list: " + error.message);
+            Swal.fire({
+                icon: "error",
+                title: "Error general",
+                text: "Error al obtener la lista de evaluados"
+            });
         }
     });
 });

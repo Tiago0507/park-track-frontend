@@ -26,16 +26,31 @@ document.addEventListener('DOMContentLoaded', function () {
             })
                 .then(response => {
                     if (response.ok) {
-                        alert("Evaluator successfully deleted.");
+                        Swal.fire({
+                            icon: 'success',
+                            title: '¡Eliminado!',
+                            text: 'El evaluador se eliminó exitosamente.',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
                         // Remove the row from the table
                         const row = document.querySelector(`button[data-id='${evaluatorIdToDelete}']`).closest('tr');
                         row.remove();
                     } else {
-                        alert("Error: Unable to delete evaluator. Please try again later.");
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'No se pudo eliminar al evaluador. Por favor, intenta más tarde.',
+                        });
+
                     }
                 })
                 .catch(error => {
-                    alert("Error: Unable to delete evaluator. Please check your connection and try again.");
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'No se pudo eliminar al evaluador. Verifica tu conexión e inténtalo de nuevo.',
+                    });
                 })
                 .finally(() => {
                     evaluatorIdToDelete = null; // Reset the evaluator ID after deletion attempt

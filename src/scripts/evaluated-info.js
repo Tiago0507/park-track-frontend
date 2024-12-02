@@ -12,7 +12,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     } catch (error) {
         console.error('Error al cargar los detalles del evaluado:', error);
-        alert("Error al obtener los detalles del evaluado: " + error.message);
+        Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: "Error al obtener los detalles del evaluado: " + error.message,
+        });
     }
 
     backBtn = document.getElementById('back-btn');
@@ -23,7 +27,11 @@ function getEvaluatedIdFromURL() {
     const urlParams = new URLSearchParams(window.location.search);
     const evaluatedId = urlParams.get('idNumber');
     if (!evaluatedId) {
-        alert("No se encontró el ID del evaluado.");
+        Swal.fire({
+            icon: "warning",
+            title: "ID no encontrado",
+            text: "No se encontró el ID del evaluado.",
+        });
     }
     return evaluatedId;
 }
@@ -31,7 +39,11 @@ function getEvaluatedIdFromURL() {
 function getTokenFromLocalStorage() {
     const token = localStorage.getItem("token");
     if (!token) {
-        alert("No se encontró el token de autorización. Por favor, inicia sesión.");
+        Swal.fire({
+            icon: "error",
+            title: "Sesión requerida",
+            text: "No se encontró el token de autorización. Por favor, inicia sesión.",
+        });
     }
     return token;
 }

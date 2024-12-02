@@ -21,22 +21,38 @@ document.addEventListener("DOMContentLoaded", async () => {
 // Utility Functions
 function validateRequiredParameters(token, evaluatedId, sampleID, testTypeId) {
     if (!token) {
-        alert("No se encontró el token de autorización. Por favor, inicia sesión.");
+        Swal.fire({
+            icon: "error",
+            title: "Token no encontrado",
+            text: "No se encontró el token de autorización. Por favor, inicia sesión.",
+        });
         return false;
     }
 
     if (!evaluatedId) {
-        alert("No se encontró el ID del evaluado. Por favor, selecciona un evaluado.");
+        Swal.fire({
+            icon: "warning",
+            title: "ID de evaluado faltante",
+            text: "No se encontró el ID del evaluado. Por favor, selecciona un evaluado.",
+        });
         return false;
     }
 
     if (!sampleID) {
-        alert("No se encontró el sample ID de la muestra.");
+        Swal.fire({
+            icon: "warning",
+            title: "Sample ID faltante",
+            text: "No se encontró el sample ID de la muestra.",
+        });
         return false;
     }
 
     if (!testTypeId) {
-        alert("No se encontró el ID del test, por favor reintentar.");
+        Swal.fire({
+            icon: "warning",
+            title: "Test Type ID faltante",
+            text: "No se encontró el ID del test, por favor reintentar.",
+        });
         return false;
     }
 
@@ -218,7 +234,11 @@ async function fetchSampleDetails(sampleID, evaluatedId, testTypeId, token) {
         return data;
     } catch (error) {
         console.error("Error:", error);
-        alert("Error al obtener datos: " + error.message);
+        Swal.fire({
+            icon: "error",
+            title: "Error al obtener datos",
+            text: error.message || "Ocurrió un error inesperado al obtener los datos.",
+        });
     }
 }
 
@@ -364,7 +384,11 @@ function createLineChart(canvasId, labels, datasets, title) {
 
 async function saveChanges(token, evaluatedId, sampleId, testTypeId, successModal, errorModal) {
     if (!token) {
-        alert("No se encontró el token de autorización. Por favor, inicia sesión.");
+        Swal.fire({
+            icon: "error",
+            title: "Token no encontrado",
+            text: "No se encontró el token de autorización. Por favor, inicia sesión.",
+        });
         return;
     }
 
@@ -377,12 +401,20 @@ async function saveChanges(token, evaluatedId, sampleId, testTypeId, successModa
     console.log(sampleObservationNotes)
 
     if (sampleOnOffState === "OFF" && sampleObservationNotes.length === 0) {
-        alert("Debe ingresar al menos una nota de observación si el estado es 'OFF'.");
+        Swal.fire({
+            icon: "warning",
+            title: "Notas requeridas",
+            text: "Debe ingresar al menos una nota de observación si el estado es 'OFF'.",
+        });
         return;
     }
 
     if (!sampleAptitude) {
-        alert("Debe seleccionar una aptitud para la prueba.");
+        Swal.fire({
+            icon: "warning",
+            title: "Aptitud requerida",
+            text: "Debe seleccionar una aptitud para la prueba.",
+        });
         return;
     }    
 

@@ -5,7 +5,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     const usernameElement = document.getElementById("username-in-session");
 
     if (!token) {
-        alert("No se encontró el token de autorización. Por favor, inicia sesión.");
+        Swal.fire({
+            icon: "error",
+            title: "Token no encontrado",
+            text: "No se encontró el token de autorización. Por favor, inicia sesión.",
+        });
         return;
     }
 
@@ -14,7 +18,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     usernameElement.textContent = parsedToken.sub || "Usuario desconocido";
 
     if (!evaluatedId) {
-        alert("No se encontró el ID del evaluado. Por favor, selecciona un evaluado.");
+        Swal.fire({
+            icon: "warning",
+            title: "ID del evaluado faltante",
+            text: "No se encontró el ID del evaluado. Por favor, selecciona un evaluado.",
+        });
         return;
     }
 
@@ -60,7 +68,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
     } catch (error) {
         console.error("Error:", error);
-        alert("Error fetching samples list: " + error.message);
+        Swal.fire({
+            icon: "error",
+            title: "Error al obtener la lista de muestras",
+            text: error.message || "Ocurrió un error inesperado al obtener la lista de muestras.",
+        });
     }
 
     function parseJwt(token) {

@@ -13,7 +13,11 @@ async function submitForm() {
 
     // Check if any required fields are empty
     if (!idNumber || !firstName || !lastName || !dateOfBirth || !email || !familyHistoryParkinson || !typeOfEvaluated || !sex || isNaN(height) || isNaN(weight)) {
-        alert("Please fill in all required fields.");
+        Swal.fire({
+            icon: "warning",
+            title: "Campos incompletos",
+            text: "Por favor completa todos los campos requeridos.",
+        });
         return;
     }
 
@@ -41,22 +45,39 @@ async function submitForm() {
         });
 
         if (!response.ok) {
-            throw new Error("Failed to add evaluated.");
+            throw new Error("No se pudo registrar el evaluado. Inténtalo nuevamente.");
         }
 
         const data = await response.json();
-        alert("Evaluated successfully added!");
+        Swal.fire({
+            icon: "success",
+            title: "Evaluado registrado",
+            text: "El evaluado se ha registrado correctamente.",
+            showConfirmButton: false,
+            timer: 2000
+        });
 
         // Optionally, reset the form or redirect
         document.getElementById("userForm").reset();
     } catch (error) {
         console.error("Error:", error);
-        alert("Error while adding evaluated.");
+        Swal.fire({
+            icon: "error",
+            title: "Error al registrar el evaluado",
+            text: error.message || "Ocurrió un error inesperado. Por favor, inténtalo de nuevo.",
+        });
     }
 }
 
 function resetForm() {
     // Select the form and reset all its fields
     document.getElementById("userForm").reset();
+    Swal.fire({
+        icon: "info",
+        title: "Formulario reiniciado",
+        text: "Puedes ingresar nuevos datos para registrar otro evaluado.",
+        showConfirmButton: false,
+        timer: 2000
+    });
 
 }

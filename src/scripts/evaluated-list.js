@@ -2,7 +2,11 @@
 function validateToken() {
   const token = localStorage.getItem("token");
   if (!token) {
-    alert("No se encontró el token de autorización. Por favor, inicia sesión.");
+    Swal.fire({
+      icon: "error",
+      title: "Sesión requerida",
+      text: "No se encontró el token de autorización. Por favor, inicia sesión.",
+  });
     return null;
   }
   console.log("Token encontrado:", token);
@@ -128,13 +132,22 @@ async function populateEvaluatedList() {
 
     // Populate rows
     for (const evaluated of evaluatedList) {
-      // Fetch samples for each evaluated
-      const samples = await fetchSamplesForEvaluated(token, evaluated.id);
-      const samplesCount = samples.length;
+      try {
+        // Fetch samples for each evaluated
+        const samples = await fetchSamplesForEvaluated(token, evaluated.id);
+        const samplesCount = samples.length;
 
-      // Create and append row
-      const row = createEvaluatedRow(evaluated, samplesCount, token);
-      tableBody.appendChild(row);
+        // Create and append row
+        const row = createEvaluatedRow(evaluated, samplesCount, token);
+        tableBody.appendChild(row);
+      } catch (error) {
+        console.error(`Error processing evaluated ID ${evaluated.id}:`, error);
+        Swal.fire({
+            icon: "error",
+            title: "Error cargando muestras",
+            text: `No se pudieron cargar las muestras para el evaluado con ID ${evaluated.id}.`,
+        });
+      }
     }
 
     // Setup add sample buttons
@@ -142,7 +155,11 @@ async function populateEvaluatedList() {
 
   } catch (error) {
     console.error("Error:", error);
-    alert("Error fetching evaluated list: " + error.message);
+    Swal.fire({
+      icon: "error",
+      title: "Error general",
+      text: "Error al obtener la lista de evaluados"
+  });
   }
 }
 

@@ -9,7 +9,11 @@ document.getElementById('evaluationForm').addEventListener('submit', function (e
     const testTypeId = document.getElementById('testTypeId').value;
 
     if (!sampleID || !evaluatedId || !testTypeId) {
-        alert("Todos los campos son obligatorios.");
+        Swal.fire({
+            icon: 'warning',
+            title: 'Campos obligatorios',
+            text: 'Todos los campos son obligatorios.',
+        });
         return;
     }
     // URL del endpoint con parámetros dinámicos
@@ -40,7 +44,14 @@ document.getElementById('evaluationForm').addEventListener('submit', function (e
             sensor1ChartInstance = createChart('sensor1Chart', sensor1Data, 'Sensor 1');
             sensor2ChartInstance = createChart('sensor2Chart', sensor2Data, 'Sensor 2');
         })
-        .catch(error => console.error('Error al obtener los datos:', error));
+        .catch(error => {
+            console.error('Error al obtener los datos:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error de conexión',
+                text: 'Hubo un problema al obtener los datos. Intenta de nuevo.',
+            });
+        });
 });
 
 // Función para procesar los datos de un sensor

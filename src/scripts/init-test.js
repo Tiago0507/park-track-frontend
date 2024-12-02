@@ -14,7 +14,11 @@ const levodopaTimeInput = document.getElementById('levodopaTime');
 document.addEventListener('DOMContentLoaded', function () {
     const token = localStorage.getItem("token");
     if (!token) {
-        alert("No se encontró el token de autorización. Por favor, inicia sesión.");
+        Swal.fire({
+            icon: 'error',
+            title: 'Autorización requerida',
+            text: 'No se encontró el token de autorización. Por favor, inicia sesión.',
+        });
         return;
     }
 
@@ -72,18 +76,33 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     restartTest.addEventListener('click', async function () {
-        if (confirm('¿Está seguro que desea reiniciar la prueba? Los datos recolectados serán eliminados permanentemente.')) {
-            const evaluatedId = document.getElementById('evaluatedId').textContent;
+        Swal.fire({
+            title: '¿Estás seguro?',
+            text: 'Los datos recolectados serán eliminados permanentemente.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, reiniciar',
+            cancelButtonText: 'Cancelar',
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                const evaluatedId = document.getElementById('evaluatedId').textContent;
 
-            if (currentSampleId && currentTestTypeId) {
-                await deleteSample(evaluatedId, currentSampleId, currentTestTypeId, token);
+                if (currentSampleId && currentTestTypeId) {
+                    await deleteSample(evaluatedId, currentSampleId, currentTestTypeId, token);
+                }
+
+                resetFormAndUI();
+                currentSampleId = null;
+                currentTestTypeId = null;
+                testTypeMapping.clear();
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Prueba reiniciada',
+                    text: 'La prueba se ha reiniciado correctamente.',
+                });
             }
-
-            resetFormAndUI();
-            currentSampleId = null;
-            currentTestTypeId = null;
-            testTypeMapping.clear();
-        }
+        });
     });
 
     startTestButton.addEventListener('click', async function () {
@@ -100,10 +119,17 @@ document.addEventListener('DOMContentLoaded', function () {
         if (evaluatedId && testTypeId && patientState && aptitudeValue) {
             const testMessage = `init~~${evaluatedId}~~${testTypeId}`;
             await startTest(client, testMessage);
-            startTestButton.disabled = false;
+            Swal.fire({
+                icon: 'success',
+                title: 'Prueba iniciada',
+                text: `La prueba para el paciente con ID ${evaluatedId} se inició correctamente.`,
+            });
         } else {
-            alert('Por favor, complete todos los campos requeridos antes de iniciar la prueba.');
-            startTestButton.disabled = false;
+            Swal.fire({
+                icon: 'error',
+                title: 'Campos requeridos',
+                text: 'Por favor, complete todos los campos requeridos antes de iniciar la prueba.',
+            });
         }
 
         console.log('Evaluated ID:', evaluatedId);
@@ -153,7 +179,11 @@ function createMQTTClient() {
 // Patient Search Functionality
 async function searchPatient(patientId, token) {
     if (!patientId) {
-        alert('Por favor, ingrese el ID del evaluado');
+        Swal.fire({
+            icon: 'warning',
+            title: 'ID requerido',
+            text: 'Por favor, ingrese el ID del evaluado.',
+        });
         return null;
     }
 
@@ -166,11 +196,20 @@ async function searchPatient(patientId, token) {
         });
 
         if (response.status === 403) {
-            alert('Debe iniciar sesión para buscar un paciente');
-            window.location.href = './../screens/index.html';
+            Swal.fire({
+                icon: 'error',
+                title: 'Sesión requerida',
+                text: 'Debe iniciar sesión para buscar un paciente.',
+            }).then(() => {
+                window.location.href = './../screens/index.html';
+            });
             return;
         } else if (response.status === 404) {
-            alert('Paciente no encontrado');
+            Swal.fire({
+                icon: 'info',
+                title: 'Paciente no encontrado',
+                text: 'No se encontraron datos para el paciente proporcionado.',
+            });
             return;
         } else if (!response.ok) {
             throw new Error('Error al buscar el paciente');
@@ -179,7 +218,11 @@ async function searchPatient(patientId, token) {
         const data = await response.json();
         return data;
     } catch (error) {
-        alert(error.message);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: error.message,
+        });
         return null;
     }
 }
@@ -283,7 +326,11 @@ async function deleteSample(evaluatedId, currentSampleId, currentTestTypeId, tok
         return true;
     } catch (error) {
         console.error('Error during reset:', error);
-        alert('Hubo un error al reiniciar la prueba. Por favor, intente nuevamente.');
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Hubo un error al reiniciar la prueba. Por favor, intente nuevamente.',
+        });
         return false;
     }
 }
@@ -310,7 +357,11 @@ async function postObservationToLastSample(evaluatedId, testTypeId, notes) {
     const token = localStorage.getItem("token"); // Asegúrate de que el token existe
 
     if (!token) {
-        console.error("No se encontró el token de autorización. Por favor, inicia sesión.");
+        Swal.fire({
+            icon: 'error',
+            title: 'Sesión requerida',
+            text: 'No se encontró el token de autorización. Por favor, inicia sesión.',
+        });
         return;
     }
 
@@ -331,15 +382,27 @@ async function postObservationToLastSample(evaluatedId, testTypeId, notes) {
         if (response.ok) {
             const responseData = await response.json();
             console.log("Observación enviada exitosamente:", responseData);
-            alert("La observación se registró con éxito.");
+            Swal.fire({
+                icon: 'success',
+                title: 'Observación registrada',
+                text: 'La observación se registró con éxito.',
+            });
         } else {
             const errorData = await response.json();
             console.error("Error al enviar la observación:", errorData);
-            alert("No se pudo registrar la observación. Por favor, inténtalo nuevamente.");
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'No se pudo registrar la observación. Por favor, inténtalo nuevamente.',
+            });
         }
     } catch (error) {
         console.error("Error en la solicitud POST:", error);
-        alert("Ocurrió un error al intentar enviar la observación.");
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Ocurrió un error al intentar enviar la observación.',
+        });
     }
 }
 
@@ -358,7 +421,11 @@ function startTest(client, testMessage) {
             const testTypeId = testMessage.split('~~')[2];
             const notesValue = localStorage.getItem("notas"); // Recuperar las notas guardadas
             localStorage.removeItem("notas")
-            alert('Prueba realizada con éxito para el paciente con ID: ' + evaluatedId);
+            Swal.fire({
+                icon: 'success',
+                title: 'Observación registrada',
+                text: `Prueba realizada con éxito para el paciente con cédula: ${evaluatedId}`
+            });
 
             // Llamar a la función de observación después de 1 segundo
             if (evaluatedId && testTypeId && notesValue) {
